@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autowartung</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      color: #1a1a2e;
+    }
+
+    header {
+      background: #3f51b5;
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 { font-size: 1.2rem; flex: 1; }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-weight: 600;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary   { background: #3f51b5; color: #fff; }
+    .btn-primary:hover { background: #303f9f; }
+    .btn-white     { background: #fff; color: #3f51b5; }
+    .btn-white:hover { background: #e8eaf6; }
+    .btn-danger    { background: #e53935; color: #fff; }
+    .btn-danger:hover { background: #c62828; }
+    .btn-sm        { padding: 5px 10px; font-size: 0.8rem; }
+    .btn-icon      { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+    .btn-icon:hover { background: rgba(0,0,0,0.08); }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 2px 8px 2px 0;
+      line-height: 1;
+    }
+
+    main { padding: 20px; max-width: 700px; margin: 0 auto; }
+
+    /* Dashboard */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .dashboard-header h2 { font-size: 1rem; color: #666; }
+
+    .vehicle-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s;
+      border-left: 5px solid #3f51b5;
+    }
+    .vehicle-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.14); transform: translateY(-1px); }
+
+    .vehicle-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .vehicle-title { font-size: 1.1rem; font-weight: 700; }
+    .vehicle-plate {
+      background: #e8eaf6;
+      color: #3f51b5;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .vehicle-meta { font-size: 0.85rem; color: #888; margin-bottom: 12px; }
+
+    .maintenance-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-ok       { background: #e8f5e9; color: #2e7d32; }
+    .badge-soon     { background: #fff8e1; color: #f57f17; }
+    .badge-overdue  { background: #fdecea; color: #c62828; }
+    .badge-none     { background: #f5f5f5; color: #999; }
+
+    /* Detail view */
+    .detail-vehicle-info {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .detail-vehicle-info h2 { font-size: 1.3rem; font-weight: 700; }
+
+    .detail-meta {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 6px 0 14px;
+    }
+
+    .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .mileage-display {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #3f51b5;
+      margin-bottom: 4px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-header h3 { font-size: 1rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .maintenance-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ccc;
+    }
+    .maintenance-card.ok      { border-left-color: #43a047; }
+    .maintenance-card.soon    { border-left-color: #fb8c00; }
+    .maintenance-card.overdue { border-left-color: #e53935; }
+    .maintenance-card.none    { border-left-color: #bdbdbd; }
+
+    .mc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .mc-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
+
+    .mc-status {
+      font-size: 0.78rem;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .mc-status.ok      { background: #e8f5e9; color: #2e7d32; }
+    .mc-status.soon    { background: #fff8e1; color: #f57f17; }
+    .mc-status.overdue { background: #fdecea; color: #c62828; }
+    .mc-status.none    { background: #f5f5f5; color: #999; }
+
+    .mc-details { font-size: 0.85rem; color: #666; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+    .mc-details span { display: block; }
+    .mc-details strong { color: #333; }
+
+    .mc-progress { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+    .mc-progress-row { display: flex; align-items: center; gap: 8px; }
+    .mc-progress-label { font-size: 0.75rem; color: #888; width: 60px; flex-shrink: 0; }
+    .mc-progress-bar { flex: 1; height: 7px; background: #eee; border-radius: 4px; overflow: visible; position: relative; }
+    .mc-progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; max-width: 100%; }
+    .mc-progress-pct { font-size: 0.75rem; font-weight: 700; width: 38px; text-align: right; flex-shrink: 0; }
+
+    .mc-history { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
+    .mc-history-title { font-size: 0.75rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .mc-history-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 3px 0;
+      font-size: 0.82rem;
+      color: #666;
+      border-bottom: 1px solid #f8f8f8;
+    }
+    .mc-history-row:last-child { border-bottom: none; }
+    .mc-history-row .h-date { width: 80px; flex-shrink: 0; }
+    .mc-history-row .h-km   { width: 90px; flex-shrink: 0; color: #3f51b5; font-weight: 600; }
+    .mc-history-row .h-edit { opacity: 0.4; font-size: 0.9rem; cursor: pointer; background: none; border: none; }
+    .mc-history-row .h-edit:hover { opacity: 1; color: #3f51b5; }
+    .mc-history-row .h-del  { margin-left: auto; opacity: 0.4; font-size: 0.9rem; cursor: pointer; background: none; border: none; }
+    .mc-history-row .h-del:hover { opacity: 1; color: #e53935; }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .modal h3 { font-size: 1.1rem; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 4px; }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #3f51b5; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; padding: 12px; font-size: 1rem; }
+
+    .empty-state {
+      text-align: center;
+      color: #bbb;
+      padding: 40px 20px;
+      font-size: 0.95rem;
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 8px; }
+
+    .divider { height: 1px; background: #eee; margin: 16px 0; }
+
+    /* Type manager */
+    .type-list { margin-bottom: 12px; }
+    .type-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+    .type-item:last-child { border-bottom: none; }
+    .type-item .type-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+    .type-item .type-name { flex: 1; font-weight: 600; }
+    .type-item .type-intervals { color: #888; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+
+<header id="header">
+  <button class="back-btn" id="backBtn" style="display:none" onclick="showDashboard()">&#8592;</button>
+  <h1 id="headerTitle">🚗 Autowartung</h1>
+  <button class="btn btn-white btn-sm" id="headerActionBtn" onclick="openVehicleModal()">+ Fahrzeug</button>
+</header>
+
+<main>
+  <!-- Dashboard -->
+  <div id="viewDashboard">
+    <div class="dashboard-header">
+      <h2 id="vehicleCount">0 Fahrzeuge</h2>
+    </div>
+    <div id="vehicleList"></div>
+  </div>
+
+  <!-- Detail View -->
+  <div id="viewDetail" style="display:none">
+    <div class="detail-vehicle-info">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="mileage-display" id="detailMileage"></div>
+          <h2 id="detailTitle"></h2>
+          <div class="detail-meta" id="detailMeta"></div>
+        </div>
+        <div style="font-size:2rem" id="detailIcon">🚗</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="openMileageModal()">📍 Km aktualisieren</button>
+        <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteVehicle()">🗑️ Löschen</button>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h3>Wartungen</h3>
+      <button class="btn btn-primary btn-sm" onclick="openMaintenanceModal()">+ Wartung</button>
+    </div>
+    <div id="maintenanceList"></div>
+
+    <div class="divider"></div>
+    <div class="section-header">
+      <h3>Wartungstypen verwalten</h3>
+      <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="openTypeModal()">+ Typ</button>
+    </div>
+    <div id="typeList" class="type-list"></div>
+  </div>
+</main>
+
+<!-- Modal: Fahrzeug -->
+<div class="modal-overlay" id="modalVehicle">
+  <div class="modal">
+    <h3 id="modalVehicleTitle">Fahrzeug hinzufügen</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fahrzeugtyp</label>
+        <input type="text" id="vType" placeholder="z.B. VW Golf">
+      </div>
+      <div class="form-group">
+        <label>Kennzeichen</label>
+        <input type="text" id="vPlate" placeholder="z.B. AB-CD 123">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fahrzeugnutzer</label>
+        <input type="text" id="vUser" placeholder="z.B. Armin">
+      </div>
+      <div class="form-group">
+        <label>Aktueller Kilometerstand</label>
+        <input type="number" id="vMileage" placeholder="z.B. 85000">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="closeModal('modalVehicle')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveVehicle()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Wartung eintragen -->
+<div class="modal-overlay" id="modalMaintenance">
+  <div class="modal">
+    <h3>Wartung eintragen</h3>
+    <div class="form-group">
+      <label>Wartungstyp</label>
+      <select id="mType" onchange="fillTypeDefaults()"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Datum</label>
+        <input type="date" id="mDate">
+      </div>
+      <div class="form-group">
+        <label>Kilometerstand</label>
+        <input type="number" id="mMileage" placeholder="z.B. 85000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ablauf nach km (leer = keins)</label>
+        <input type="number" id="mIntervalKm" placeholder="z.B. 30000">
+      </div>
+      <div class="form-group">
+        <label>Ablauf nach Monaten (leer = keins)</label>
+        <input type="number" id="mIntervalMonths" placeholder="z.B. 24">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Kommentar <span style="font-weight:400;color:#aaa">(optional)</span></label>
+      <input type="text" id="mComment" placeholder="z.B. Markenwerkstatt, Teilenummer...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="closeModal('modalMaintenance')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveMaintenance()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Kilometerstand aktualisieren -->
+<div class="modal-overlay" id="modalMileage">
+  <div class="modal">
+    <h3>Kilometerstand aktualisieren</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Neuer Kilometerstand</label>
+        <input type="number" id="newMileage" placeholder="z.B. 87500">
+      </div>
+      <div class="form-group">
+        <label>Datum</label>
+        <input type="date" id="newMileageDate">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="closeModal('modalMileage')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveMileage()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Wartungstyp hinzufügen -->
+<div class="modal-overlay" id="modalType">
+  <div class="modal">
+    <h3>Neuen Wartungstyp hinzufügen</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="tName" placeholder="z.B. Zahnriemen">
+      </div>
+      <div class="form-group">
+        <label>Icon (Emoji)</label>
+        <input type="text" id="tIcon" placeholder="z.B. ⚙️" maxlength="4">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Intervall (km, leer = keins)</label>
+        <input type="number" id="tIntervalKm" placeholder="z.B. 60000">
+      </div>
+      <div class="form-group">
+        <label>Intervall (Monate, leer = keins)</label>
+        <input type="number" id="tIntervalMonths" placeholder="z.B. 48">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="closeModal('modalType')">Abbrechen</button>
+      <button class="btn btn-primary" id="typeSaveBtn" onclick="saveType()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── Datenmodell ────────────────────────────────────────────────────────────
+
+  const DEFAULT_TYPES = [
+    { id: 'exhaust',          name: 'Auspuff',                  icon: '💨', intervalKm: null, intervalMonths: null },
+    { id: 'petrol_filter',    name: 'Benzinfilter',             icon: '⛽', intervalKm: null, intervalMonths: null },
+    { id: 'brake_grease',     name: 'Bremse schmieren',         icon: '🪛', intervalKm: null, intervalMonths: null },
+    { id: 'brakes_rear',      name: 'Bremsen hinten',           icon: '⚙️', intervalKm: null, intervalMonths: null },
+    { id: 'brakes_front',     name: 'Bremsen vorne',            icon: '🔧', intervalKm: null, intervalMonths: null },
+    { id: 'brake_fluid',      name: 'Bremsflüssigkeit',         icon: '💧', intervalKm: null, intervalMonths: null },
+    { id: 'diesel_filter',    name: 'Dieselfilter',             icon: '🪣', intervalKm: null, intervalMonths: null },
+    { id: 'dsg_oil',          name: 'DSG Ölwechsel',            icon: '🔄', intervalKm: null, intervalMonths: null },
+    { id: 'glow_plugs',       name: 'Glühkerzen',               icon: '🔥', intervalKm: null, intervalMonths: null },
+    { id: 'bulb_h7',          name: 'Lampen H7',                icon: '💡', intervalKm: null, intervalMonths: null },
+    { id: 'air_filter',       name: 'Luftfilter',               icon: '🌬️', intervalKm: null, intervalMonths: null },
+    { id: 'oil',              name: 'Ölwechsel',                icon: '🛢️', intervalKm: null, intervalMonths: null },
+    { id: 'pollen_filter',    name: 'Pollenfilter',             icon: '🌸', intervalKm: null, intervalMonths: null },
+    { id: 'wiper_rear',       name: 'Scheibenwischer hinten',   icon: '🌦️', intervalKm: null, intervalMonths: null },
+    { id: 'wiper_front',      name: 'Scheibenwischer vorne',    icon: '🌧️', intervalKm: null, intervalMonths: null },
+    { id: 'battery',          name: 'Starterbatterie',          icon: '🔋', intervalKm: null, intervalMonths: null },
+    { id: 'tuev',             name: 'TÜV',                      icon: '📋', intervalKm: null, intervalMonths: null },
+    { id: 'spark_plugs',      name: 'Zündkerzen',               icon: '⚡', intervalKm: null, intervalMonths: null },
+  ];
+
+  let data = {
+    vehicles: [],
+    maintenanceTypes: [],
+    maintenanceRecords: []
+  };
+
+  let currentVehicleId = null;
+
+  function save() {
+    localStorage.setItem('autowartung', JSON.stringify(data));
+  }
+
+  function load() {
+    const raw = localStorage.getItem('autowartung');
+    if (raw) {
+      data = JSON.parse(raw);
+      // Neue Standard-Typen ergänzen falls noch nicht vorhanden
+      DEFAULT_TYPES.forEach(dt => {
+        if (!data.maintenanceTypes.find(t => t.id === dt.id)) {
+          data.maintenanceTypes.push(dt);
+        }
+      });
+      save();
+    } else {
+      data.maintenanceTypes = DEFAULT_TYPES;
+      save();
+    }
+  }
+
+  // ─── Hilfsfunktionen ────────────────────────────────────────────────────────
+
+  function fmtKm(km) {
+    return km != null ? Number(km).toLocaleString('de-DE') + ' km' : '–';
+  }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '–';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}.${m}.${y}`;
+  }
+
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function addMonths(dateStr, months) {
+    const d = new Date(dateStr);
+    d.setMonth(d.getMonth() + months);
+    return d;
+  }
+
+  function daysBetween(dateStr) {
+    const d = new Date(dateStr);
+    const now = new Date();
+    return Math.floor((d - now) / 86400000);
+  }
+
+  function getLastRecord(vehicleId, typeId) {
+    return data.maintenanceRecords
+      .filter(r => r.vehicleId === vehicleId && r.typeId === typeId)
+      .sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+  }
+
+  function getStatus(record, type, currentMileage) {
+    if (!record) return 'none';
+
+    // Record-spezifische Intervalle haben Vorrang vor Typ-Defaults
+    const iKm     = record.intervalKm     ?? type.intervalKm;
+    const iMonths = record.intervalMonths ?? type.intervalMonths;
+
+    let overdue = false, soon = false;
+
+    if (iKm) {
+      const nextKm = record.mileage + iKm;
+      const remaining = nextKm - currentMileage;
+      if (remaining <= 0) overdue = true;
+      else if (remaining <= iKm * 0.2) soon = true;
+    }
+
+    if (iMonths) {
+      const nextDate = addMonths(record.date, iMonths);
+      const days = Math.floor((nextDate - new Date()) / 86400000);
+      if (days <= 0) overdue = true;
+      else if (days <= 60) soon = true;
+    }
+
+    if (overdue) return 'overdue';
+    if (soon) return 'soon';
+    return 'ok';
+  }
+
+  function progressColor(pct) {
+    if (pct >= 100) return '#e53935';
+    if (pct >= 80)  return '#fb8c00';
+    return '#43a047';
+  }
+
+  function progressBar(label, pct) {
+    const clamped = Math.min(pct, 100);
+    const color   = progressColor(pct);
+    return `
+      <div class="mc-progress-row">
+        <span class="mc-progress-label">${label}</span>
+        <div class="mc-progress-bar">
+          <div class="mc-progress-fill" style="width:${clamped}%;background:${color}"></div>
+        </div>
+        <span class="mc-progress-pct" style="color:${color}">${pct}%</span>
+      </div>`;
+  }
+
+  function statusLabel(status) {
+    return { ok: '✅ OK', soon: '⚠️ Bald fällig', overdue: '🔴 Überfällig', none: '– Nicht erfasst' }[status];
+  }
+
+  // ─── Dashboard ──────────────────────────────────────────────────────────────
+
+  function showDashboard() {
+    currentVehicleId = null;
+    document.getElementById('viewDashboard').style.display = '';
+    document.getElementById('viewDetail').style.display = 'none';
+    document.getElementById('backBtn').style.display = 'none';
+    document.getElementById('headerTitle').textContent = '🚗 Autowartung';
+    document.getElementById('headerActionBtn').textContent = '+ Fahrzeug';
+    document.getElementById('headerActionBtn').onclick = () => openVehicleModal();
+    renderDashboard();
+  }
+
+  function renderDashboard() {
+    const list = document.getElementById('vehicleList');
+    const count = document.getElementById('vehicleCount');
+    count.textContent = `${data.vehicles.length} Fahrzeug${data.vehicles.length !== 1 ? 'e' : ''}`;
+
+    if (data.vehicles.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">🚗</div>Noch kein Fahrzeug angelegt.<br>Klicke auf "+ Fahrzeug" um zu starten.</div>`;
+      return;
+    }
+
+    list.innerHTML = data.vehicles.map(v => {
+      const statuses = data.maintenanceTypes.map(t => getStatus(getLastRecord(v.id, t.id), t, v.mileage));
+      const counts = { overdue: 0, soon: 0, ok: 0, none: 0 };
+      statuses.forEach(s => counts[s]++);
+
+      const worstStatus = counts.overdue ? 'overdue' : counts.soon ? 'soon' : counts.ok ? 'ok' : 'none';
+      const summary = [
+        counts.overdue ? `<span class="badge badge-overdue">🔴 ${counts.overdue} Überfällig</span>` : '',
+        counts.soon    ? `<span class="badge badge-soon">⚠️ ${counts.soon} Bald fällig</span>`    : '',
+        counts.ok      ? `<span class="badge badge-ok">✅ ${counts.ok} OK</span>`                  : '',
+      ].join('');
+
+      return `
+        <div class="vehicle-card" onclick="showDetail('${v.id}')" style="border-left-color:${worstStatus==='overdue'?'#e53935':worstStatus==='soon'?'#fb8c00':worstStatus==='ok'?'#43a047':'#bdbdbd'}">
+          <div class="vehicle-card-top">
+            <div class="vehicle-title">🚗 ${escHtml(v.type)}</div>
+            <div class="vehicle-plate">${escHtml(v.plate)}</div>
+          </div>
+          <div class="vehicle-meta">👤 ${escHtml(v.user)} &nbsp;·&nbsp; 📍 ${fmtKm(v.mileage)} &nbsp;·&nbsp; Stand: ${fmtDate(v.mileageDate || todayStr())}</div>
+          <div class="maintenance-badges">${summary}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── Detail View ─────────────────────────────────────────────────────────────
+
+  function showDetail(id) {
+    currentVehicleId = id;
+    document.getElementById('viewDashboard').style.display = 'none';
+    document.getElementById('viewDetail').style.display = '';
+    document.getElementById('backBtn').style.display = '';
+    document.getElementById('headerActionBtn').style.display = 'none';
+    renderDetail();
+  }
+
+  function renderDetail() {
+    const v = data.vehicles.find(v => v.id === currentVehicleId);
+    if (!v) return showDashboard();
+
+    document.getElementById('headerTitle').textContent = `${v.type}`;
+    document.getElementById('detailTitle').textContent = `${v.type} · ${v.plate}`;
+    document.getElementById('detailMeta').textContent = `👤 ${v.user}`;
+    document.getElementById('detailMileage').textContent = fmtKm(v.mileage);
+
+    // Wartungskarten — nur Typen mit mindestens einem Eintrag
+    const list = document.getElementById('maintenanceList');
+    const typesWithRecords = data.maintenanceTypes
+      .filter(t => data.maintenanceRecords.some(r => r.vehicleId === v.id && r.typeId === t.id))
+      .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+
+    if (typesWithRecords.length === 0) {
+      list.innerHTML = `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🔧</div>Noch keine Wartung erfasst.<br>Klicke auf "+ Wartung" um zu starten.</div>`;
+    } else {
+      list.innerHTML = typesWithRecords.map(t => {
+        const allRecords = data.maintenanceRecords
+          .filter(r => r.vehicleId === v.id && r.typeId === t.id)
+          .sort((a, b) => b.date.localeCompare(a.date));
+        const rec    = allRecords[0];
+        const status = getStatus(rec, t, v.mileage);
+        const iKm     = rec.intervalKm     ?? t.intervalKm;
+        const iMonths = rec.intervalMonths ?? t.intervalMonths;
+
+        let details = '';
+        details += `<span><strong>Letzte Wartung:</strong> ${fmtDate(rec.date)} bei ${fmtKm(rec.mileage)}</span>`;
+        if (iKm) {
+          const nextKm = rec.mileage + iKm;
+          const rem    = nextKm - v.mileage;
+          details += `<span><strong>Nächste (km):</strong> bei ${fmtKm(nextKm)} (noch ${fmtKm(Math.max(0, rem))})</span>`;
+        }
+        if (iMonths) {
+          const nextDate    = addMonths(rec.date, iMonths);
+          const days        = daysBetween(nextDate.toISOString().slice(0, 10));
+          const nextDateStr = nextDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+          details += `<span><strong>Nächste (Datum):</strong> ${nextDateStr} (noch ${Math.max(0, days)} Tage)</span>`;
+        }
+        details += `<span style="color:#aaa;font-size:0.78rem">Intervall: ${iKm ? fmtKm(iKm) : '–'} / ${iMonths ? iMonths + ' Monate' : '–'}</span>`;
+
+        // Fortschrittsbalken
+        let progressHtml = '<div class="mc-progress">';
+        if (iKm) {
+          const kmPct = Math.round((v.mileage - rec.mileage) / iKm * 100);
+          progressHtml += progressBar('🛣️ km', kmPct);
+        }
+        if (iMonths) {
+          const totalDays   = iMonths * 30.44;
+          const elapsedDays = Math.floor((new Date() - new Date(rec.date)) / 86400000);
+          const datePct     = Math.round(elapsedDays / totalDays * 100);
+          progressHtml += progressBar('📅 Zeit', datePct);
+        }
+        progressHtml += '</div>';
+
+        // Historie aller Einträge
+        const historyRows = allRecords.map(r => `
+          <div class="mc-history-row">
+            <span class="h-date">${fmtDate(r.date)}</span>
+            <span class="h-km">${fmtKm(r.mileage)}</span>
+            ${r.comment ? `<span style="flex:1;color:#888;font-size:0.8rem;font-style:italic">💬 ${escHtml(r.comment)}</span>` : '<span style="flex:1"></span>'}
+            <button class="h-edit" onclick="openMaintenanceModal('${t.id}','${r.id}')" title="Bearbeiten">✏️</button>
+            <button class="h-del"  onclick="deleteRecord('${r.id}')" title="Löschen">🗑️</button>
+          </div>`).join('');
+
+        const history = allRecords.length > 0 ? `
+          <div class="mc-history">
+            <div class="mc-history-title">Historie</div>
+            ${historyRows}
+          </div>` : '';
+
+        return `
+          <div class="maintenance-card ${status}">
+            <div class="mc-top">
+              <div class="mc-title">${t.icon} ${escHtml(t.name)}</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="mc-status ${status}">${statusLabel(status)}</div>
+                <button class="btn-icon" onclick="openMaintenanceModal('${t.id}')" title="Neu eintragen">+</button>
+              </div>
+            </div>
+            <div class="mc-details">${details}</div>
+            ${progressHtml}
+            ${history}
+          </div>`;
+      }).join('');
+    }
+
+    // Wartungstypen-Liste
+    renderTypeList();
+  }
+
+  function renderTypeList() {
+    const list = document.getElementById('typeList');
+    list.innerHTML = [...data.maintenanceTypes].sort((a, b) => a.name.localeCompare(b.name, 'de')).map(t => `
+      <div class="type-item">
+        <span class="type-icon">${t.icon}</span>
+        <span class="type-name">${escHtml(t.name)}</span>
+        <span class="type-intervals">
+          ${t.intervalKm ? fmtKm(t.intervalKm) : '–'} &nbsp;/&nbsp; ${t.intervalMonths ? t.intervalMonths + ' Monate' : '–'}
+        </span>
+        <button class="btn-icon" onclick="openTypeModal('${t.id}')" title="Bearbeiten">✏️</button>
+        ${t.id.startsWith('custom_') ? `<button class="btn-icon" onclick="deleteType('${t.id}')" title="Löschen">🗑️</button>` : ''}
+      </div>`).join('');
+  }
+
+  // ─── Modals ──────────────────────────────────────────────────────────────────
+
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  // Fahrzeug Modal
+  function openVehicleModal(id = null) {
+    document.getElementById('modalVehicleTitle').textContent = id ? 'Fahrzeug bearbeiten' : 'Fahrzeug hinzufügen';
+    const v = id ? data.vehicles.find(v => v.id === id) : null;
+    document.getElementById('vType').value    = v?.type    || '';
+    document.getElementById('vPlate').value   = v?.plate   || '';
+    document.getElementById('vUser').value    = v?.user    || '';
+    document.getElementById('vMileage').value = v?.mileage || '';
+    openModal('modalVehicle');
+  }
+
+  function saveVehicle() {
+    const type    = document.getElementById('vType').value.trim();
+    const plate   = document.getElementById('vPlate').value.trim();
+    const user    = document.getElementById('vUser').value.trim();
+    const mileage = parseInt(document.getElementById('vMileage').value);
+    if (!type || !plate) return alert('Bitte Fahrzeugtyp und Kennzeichen eingeben.');
+
+    if (currentVehicleId) {
+      const v = data.vehicles.find(v => v.id === currentVehicleId);
+      Object.assign(v, { type, plate, user, mileage });
+    } else {
+      data.vehicles.push({ id: 'v_' + Date.now(), type, plate, user, mileage, mileageDate: todayStr() });
+    }
+    save();
+    closeModal('modalVehicle');
+    currentVehicleId ? renderDetail() : renderDashboard();
+  }
+
+  function deleteRecord(id) {
+    if (!confirm('Diesen Eintrag aus der Historie löschen?')) return;
+    data.maintenanceRecords = data.maintenanceRecords.filter(r => r.id !== id);
+    save();
+    renderDetail();
+  }
+
+  function deleteVehicle() {
+    if (!confirm('Fahrzeug und alle Wartungseinträge löschen?')) return;
+    data.vehicles = data.vehicles.filter(v => v.id !== currentVehicleId);
+    data.maintenanceRecords = data.maintenanceRecords.filter(r => r.vehicleId !== currentVehicleId);
+    save();
+    showDashboard();
+  }
+
+  // Wartung Modal
+  let editingRecordId = null;
+
+  function fillTypeDefaults() {
+    const typeId  = document.getElementById('mType').value;
+    const t       = data.maintenanceTypes.find(t => t.id === typeId);
+    const lastRec = getLastRecord(currentVehicleId, typeId);
+    // Fahrzeugspezifischer letzter Eintrag hat Vorrang vor Typ-Standard
+    document.getElementById('mIntervalKm').value     = (lastRec?.intervalKm     ?? t?.intervalKm)     || '';
+    document.getElementById('mIntervalMonths').value = (lastRec?.intervalMonths ?? t?.intervalMonths) || '';
+  }
+
+  function openMaintenanceModal(preTypeId = null, recordId = null) {
+    const v = data.vehicles.find(v => v.id === currentVehicleId);
+    const sel = document.getElementById('mType');
+    sel.innerHTML = [...data.maintenanceTypes].sort((a, b) => a.name.localeCompare(b.name, 'de')).map(t => `<option value="${t.id}">${t.icon} ${t.name}</option>`).join('');
+
+    editingRecordId = recordId;
+    document.querySelector('#modalMaintenance h3').textContent = recordId ? 'Wartung bearbeiten' : 'Wartung eintragen';
+
+    if (recordId) {
+      const rec = data.maintenanceRecords.find(r => r.id === recordId);
+      const t   = data.maintenanceTypes.find(t => t.id === rec.typeId);
+      sel.value = rec.typeId;
+      document.getElementById('mDate').value           = rec.date;
+      document.getElementById('mMileage').value        = rec.mileage;
+      document.getElementById('mIntervalKm').value     = rec.intervalKm     ?? t?.intervalKm     ?? '';
+      document.getElementById('mIntervalMonths').value = rec.intervalMonths ?? t?.intervalMonths ?? '';
+      document.getElementById('mComment').value        = rec.comment || '';
+    } else {
+      if (preTypeId) sel.value = preTypeId;
+      document.getElementById('mDate').value    = todayStr();
+      document.getElementById('mMileage').value = v?.mileage || '';
+      document.getElementById('mComment').value = '';
+      fillTypeDefaults();
+    }
+    openModal('modalMaintenance');
+  }
+
+  function saveMaintenance() {
+    const typeId       = document.getElementById('mType').value;
+    const date         = document.getElementById('mDate').value;
+    const mileage      = parseInt(document.getElementById('mMileage').value);
+    const intervalKm     = document.getElementById('mIntervalKm').value     ? parseInt(document.getElementById('mIntervalKm').value)     : null;
+    const intervalMonths = document.getElementById('mIntervalMonths').value ? parseInt(document.getElementById('mIntervalMonths').value) : null;
+    const comment        = document.getElementById('mComment').value.trim() || null;
+    if (!date || !mileage) return alert('Bitte Datum und Kilometerstand eingeben.');
+
+    if (editingRecordId) {
+      const rec = data.maintenanceRecords.find(r => r.id === editingRecordId);
+      Object.assign(rec, { typeId, date, mileage, intervalKm, intervalMonths, comment });
+    } else {
+      data.maintenanceRecords.push({ id: 'r_' + Date.now(), vehicleId: currentVehicleId, typeId, date, mileage, intervalKm, intervalMonths, comment });
+    }
+    save();
+    closeModal('modalMaintenance');
+    renderDetail();
+  }
+
+  // Km aktualisieren Modal
+  function openMileageModal() {
+    const v = data.vehicles.find(v => v.id === currentVehicleId);
+    document.getElementById('newMileage').value     = v?.mileage || '';
+    document.getElementById('newMileageDate').value = todayStr();
+    openModal('modalMileage');
+  }
+
+  function saveMileage() {
+    const mileage = parseInt(document.getElementById('newMileage').value);
+    const date    = document.getElementById('newMileageDate').value;
+    if (!mileage) return alert('Bitte Kilometerstand eingeben.');
+    const v = data.vehicles.find(v => v.id === currentVehicleId);
+    v.mileage     = mileage;
+    v.mileageDate = date;
+    save();
+    closeModal('modalMileage');
+    renderDetail();
+  }
+
+  // Wartungstyp Modal
+  let editingTypeId = null;
+
+  function openTypeModal(id = null) {
+    editingTypeId = id;
+    const t = id ? data.maintenanceTypes.find(t => t.id === id) : null;
+    document.querySelector('#modalType h3').textContent = t ? 'Wartungstyp bearbeiten' : 'Neuen Wartungstyp hinzufügen';
+    document.getElementById('tName').value           = t?.name           || '';
+    document.getElementById('tIcon').value           = t?.icon           || '';
+    document.getElementById('tIntervalKm').value     = t?.intervalKm     || '';
+    document.getElementById('tIntervalMonths').value = t?.intervalMonths || '';
+    openModal('modalType');
+  }
+
+  function saveType() {
+    const name   = document.getElementById('tName').value.trim();
+    const icon   = document.getElementById('tIcon').value.trim() || '🔩';
+    const kmVal  = document.getElementById('tIntervalKm').value;
+    const moVal  = document.getElementById('tIntervalMonths').value;
+    if (!name) return alert('Bitte einen Namen eingeben.');
+
+    if (editingTypeId) {
+      const t = data.maintenanceTypes.find(t => t.id === editingTypeId);
+      Object.assign(t, {
+        name, icon,
+        intervalKm:     kmVal ? parseInt(kmVal) : null,
+        intervalMonths: moVal ? parseInt(moVal) : null
+      });
+    } else {
+      data.maintenanceTypes.push({
+        id: 'custom_' + Date.now(),
+        name, icon,
+        intervalKm:     kmVal ? parseInt(kmVal) : null,
+        intervalMonths: moVal ? parseInt(moVal) : null
+      });
+    }
+    save();
+    closeModal('modalType');
+    renderDetail();
+  }
+
+  function deleteType(id) {
+    if (!confirm('Wartungstyp löschen? Alle zugehörigen Einträge bleiben erhalten.')) return;
+    data.maintenanceTypes = data.maintenanceTypes.filter(t => t.id !== id);
+    save();
+    renderDetail();
+  }
+
+  // Modals bei Klick auf Overlay schließen
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+
+  // Header-Btn in Detailansicht ausblenden/einblenden
+  document.getElementById('headerActionBtn').addEventListener('click', () => {});
+
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── Start ───────────────────────────────────────────────────────────────────
+  load();
+  showDashboard();
+</script>
+</body>
+</html>
