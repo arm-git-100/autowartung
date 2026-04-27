@@ -313,8 +313,8 @@
     <h3 id="modalMaintenanceTitle">Wartung eintragen</h3>
     <div class="form-group"><label>Wartungstyp</label><select id="mType" onchange="window.fillTypeDefaults()"></select></div>
     <div class="form-row">
-      <div class="form-group"><label>Datum</label><input type="date" id="mDate" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Kilometerstand <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="number" id="mMileage" placeholder="z.B. 85000"></div>
+      <div class="form-group"><label>Datum</label><input type="date" id="mDate"></div>
+      <div class="form-group"><label>Kilometerstand</label><input type="number" id="mMileage" placeholder="z.B. 85000"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Ablauf nach km</label><input type="number" id="mIntervalKm" placeholder="z.B. 30000"></div>
@@ -337,7 +337,7 @@
     <h3>Kilometerstand aktualisieren</h3>
     <div class="form-row">
       <div class="form-group"><label>Neuer Kilometerstand</label><input type="number" id="newMileage" placeholder="z.B. 87500"></div>
-      <div class="form-group"><label>Datum</label><input type="date" id="newMileageDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group"><label>Datum</label><input type="date" id="newMileageDate"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalMileage')">Abbrechen</button>
@@ -352,7 +352,7 @@
     <h3 id="modalRepairTitle">Reparatur erfassen</h3>
     <div class="form-group"><label>Beschreibung</label><input type="text" id="rDesc" placeholder="z.B. Stoßdämpfer getauscht..."></div>
     <div class="form-row">
-      <div class="form-group"><label>Datum</label><input type="date" id="rDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group"><label>Datum</label><input type="date" id="rDate"></div>
       <div class="form-group"><label>Kilometerstand</label><input type="number" id="rMileage" placeholder="z.B. 87500"></div>
     </div>
     <div class="modal-actions">
@@ -544,14 +544,6 @@
   function addMonths(s, n) { const d=new Date(s); d.setMonth(d.getMonth()+n); return d; }
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  function fixYear(el) {
-    const val = el.value;
-    if (!val) return;
-    const [y, m, d] = val.split('-');
-    const year = parseInt(y);
-    if (year > 0 && year < 100) el.value = `${2000 + year}-${m}-${d}`;
-  }
-
   function getLastRecord(vehicleId, typeId) {
     return maintenanceRecords.filter(r=>r.vehicleId===vehicleId&&r.typeId===typeId)
       .sort((a,b)=>b.date.localeCompare(a.date))[0] || null;
@@ -561,7 +553,7 @@
     if (!record) return 'none';
     const iKm=record.intervalKm??type.intervalKm, iMonths=record.intervalMonths??type.intervalMonths;
     let overdue=false, soon=false;
-    if (iKm && record.mileage != null) { const rem=record.mileage+iKm-currentMileage; if(rem<=0) overdue=true; else if(rem<=iKm*.2) soon=true; }
+    if (iKm) { const rem=record.mileage+iKm-currentMileage; if(rem<=0) overdue=true; else if(rem<=iKm*.2) soon=true; }
     if (iMonths) { const days=Math.floor((addMonths(record.date,iMonths)-new Date())/86400000); if(days<=0) overdue=true; else if(days<=60) soon=true; }
     return overdue?'overdue':soon?'soon':'ok';
   }
@@ -652,13 +644,13 @@
         const status = getStatus(rec, t, v.mileage);
         const iKm = rec.intervalKm??t.intervalKm, iMonths = rec.intervalMonths??t.intervalMonths;
 
-        let details = `<span><strong>Letzte Wartung:</strong> ${fmtDate(rec.date)}${rec.mileage != null ? ' bei ' + fmtKm(rec.mileage) : ''}</span>`;
-        if (iKm && rec.mileage != null) { const nk=rec.mileage+iKm, rem=nk-v.mileage; details+=`<span><strong>Nächste (km):</strong> bei ${fmtKm(nk)} (noch ${fmtKm(Math.max(0,rem))})</span>`; }
+        let details = `<span><strong>Letzte Wartung:</strong> ${fmtDate(rec.date)} bei ${fmtKm(rec.mileage)}</span>`;
+        if (iKm) { const nk=rec.mileage+iKm, rem=nk-v.mileage; details+=`<span><strong>Nächste (km):</strong> bei ${fmtKm(nk)} (noch ${fmtKm(Math.max(0,rem))})</span>`; }
         if (iMonths) { const nd=addMonths(rec.date,iMonths), days=Math.floor((nd-new Date())/86400000), ds=nd.toLocaleDateString('de-DE',{month:'long',year:'numeric'}); details+=`<span><strong>Nächste (Datum):</strong> ${ds} (noch ${Math.max(0,days)} Tage)</span>`; }
         details += `<span style="color:#aaa;font-size:.78rem">Intervall: ${iKm?fmtKm(iKm):'–'} / ${iMonths?iMonths+' Monate':'–'}</span>`;
 
         let prog = '<div class="mc-progress">';
-        if (iKm && rec.mileage != null) prog += progressBar('🛣️ km', Math.round((v.mileage-rec.mileage)/iKm*100));
+        if (iKm) prog += progressBar('🛣️ km', Math.round((v.mileage-rec.mileage)/iKm*100));
         if (iMonths) prog += progressBar('📅 Zeit', Math.round(Math.floor((new Date()-new Date(rec.date))/86400000)/(iMonths*30.44)*100));
         prog += '</div>';
 
@@ -818,8 +810,8 @@
     const intervalKm=document.getElementById('mIntervalKm').value ? parseInt(document.getElementById('mIntervalKm').value) : null;
     const intervalMonths=document.getElementById('mIntervalMonths').value ? parseInt(document.getElementById('mIntervalMonths').value) : null;
     const comment=document.getElementById('mComment').value.trim() || null;
-    if (!date) return alert('Bitte Datum eingeben.');
-    const recData = {vehicleId:currentVehicleId,typeId,date,mileage:mileage||null,intervalKm,intervalMonths,comment};
+    if (!date||!mileage) return alert('Bitte Datum und Kilometerstand eingeben.');
+    const recData = {vehicleId:currentVehicleId,typeId,date,mileage,intervalKm,intervalMonths,comment};
     if (editingRecordId) { await updateDoc(doc(db,'maintenanceRecords',editingRecordId), recData); }
     else { await addDoc(recordsCol, recData); }
     editingRecordId=null;
@@ -942,7 +934,7 @@
     openRepairModal, saveRepair, deleteRepair,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
-    exportData, importData, fixYear,
+    exportData, importData,
   });
 
   // Expose currentVehicleId for inline onclick
