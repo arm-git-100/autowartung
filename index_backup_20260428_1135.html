@@ -253,7 +253,6 @@
       <div class="detail-actions">
         <button class="btn btn-primary btn-sm" onclick="window.openMileageModal()">📍 Km aktualisieren</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
-        <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.exportPdf()">📄 PDF</button>
         <button class="btn btn-danger btn-sm" onclick="window.deleteVehicle()">🗑️ Löschen</button>
       </div>
     </div>
@@ -599,17 +598,16 @@
       return;
     }
     list.innerHTML = vehicles.map(v => {
-      const typeStatuses = maintenanceTypes.map(t => ({ t, status: getStatus(getLastRecord(v.id,t.id), t, v.mileage) }));
-      const overduTypes  = typeStatuses.filter(x=>x.status==='overdue').map(x=>x.t);
-      const soonTypes    = typeStatuses.filter(x=>x.status==='soon').map(x=>x.t);
-      const okCount      = typeStatuses.filter(x=>x.status==='ok').length;
-      const worst = overduTypes.length?'overdue':soonTypes.length?'soon':okCount?'ok':'none';
+      const statuses = maintenanceTypes.map(t => getStatus(getLastRecord(v.id,t.id), t, v.mileage));
+      const counts = {overdue:0,soon:0,ok:0};
+      statuses.forEach(s => { if(counts[s]!==undefined) counts[s]++; });
+      const worst = counts.overdue?'overdue':counts.soon?'soon':counts.ok?'ok':'none';
       const borderColor = {overdue:'#e53935',soon:'#fb8c00',ok:'#43a047',none:'#bdbdbd'}[worst];
-
-      const overdueItems = overduTypes.map(t=>`<span class="badge badge-overdue">🔴 ${t.icon} ${escHtml(t.name)}</span>`).join('');
-      const soonItems    = soonTypes.map(t=>`<span class="badge badge-soon">⚠️ ${t.icon} ${escHtml(t.name)}</span>`).join('');
-      const okBadge      = okCount ? `<span class="badge badge-ok">✅ ${okCount} OK</span>` : '';
-      const summary = overdueItems + soonItems + okBadge;
+      const summary = [
+        counts.overdue ? `<span class="badge badge-overdue">🔴 ${counts.overdue} Überfällig</span>` : '',
+        counts.soon    ? `<span class="badge badge-soon">⚠️ ${counts.soon} Bald fällig</span>` : '',
+        counts.ok      ? `<span class="badge badge-ok">✅ ${counts.ok} OK</span>` : '',
+      ].join('');
       return `<div class="vehicle-card" onclick="window.showDetail('${v.id}')" style="border-left-color:${borderColor}">
         <div class="vehicle-card-top">
           <div class="vehicle-title">🚗 ${escHtml(v.type)}</div>
@@ -891,64 +889,6 @@
     await deleteDoc(doc(db,'maintenanceTypes',id));
   }
 
-  // ── PDF Export ───────────────────────────────────────────────────────────────
-  function exportPdf() {
-    const v = vehicles.find(v=>v.id===currentVehicleId);
-    if (!v) return;
-
-    const typesWithRecords = maintenanceTypes
-      .filter(t => maintenanceRecords.some(r=>r.vehicleId===v.id&&r.typeId===t.id))
-      .sort((a,b)=>a.name.localeCompare(b.name,'de'));
-
-    const vRepairs = repairs.filter(r=>r.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
-
-    const wartungenHtml = typesWithRecords.map(t => {
-      const allRecs = maintenanceRecords.filter(r=>r.vehicleId===v.id&&r.typeId===t.id).sort((a,b)=>b.date.localeCompare(a.date));
-      const rows = allRecs.map(r=>`
-        <tr>
-          <td>${fmtDate(r.date)}</td>
-          <td>${r.mileage!=null?fmtKm(r.mileage):'–'}</td>
-          <td>${r.intervalKm?fmtKm(r.intervalKm):'–'}</td>
-          <td>${r.intervalMonths?r.intervalMonths+' Monate':'–'}</td>
-          <td>${r.comment||''}</td>
-        </tr>`).join('');
-      return `<h3>${t.icon} ${t.name}</h3>
-        <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Intervall km</th><th>Intervall Zeit</th><th>Kommentar</th></tr></thead>
-        <tbody>${rows}</tbody></table>`;
-    }).join('');
-
-    const reparaturenHtml = vRepairs.length ? `
-      <h2>Reparaturen</h2>
-      <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Beschreibung</th></tr></thead>
-      <tbody>${vRepairs.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.mileage!=null?fmtKm(r.mileage):'–'}</td><td>${r.description}</td></tr>`).join('')}</tbody></table>` : '';
-
-    const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
-      <title>Wartungshistorie – ${v.type} ${v.plate}</title>
-      <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #222; padding: 24px; }
-        h1 { font-size: 1.4rem; margin-bottom: 4px; }
-        .meta { color: #666; margin-bottom: 24px; font-size: 11px; }
-        h2 { font-size: 1.1rem; margin: 24px 0 8px; border-bottom: 2px solid #3f51b5; padding-bottom: 4px; color: #3f51b5; }
-        h3 { font-size: 0.95rem; margin: 16px 0 4px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        th { background: #3f51b5; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; }
-        td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 11px; }
-        tr:nth-child(even) td { background: #f9f9f9; }
-        @media print { body { padding: 0; } }
-      </style></head><body>
-      <h1>🚗 ${v.type} &nbsp; <span style="font-size:.8em;color:#3f51b5">${v.plate}</span></h1>
-      <div class="meta">👤 ${v.user} &nbsp;·&nbsp; 📍 ${fmtKm(v.mileage)} &nbsp;·&nbsp; Stand: ${fmtDate(v.mileageDate)} &nbsp;·&nbsp; Erstellt: ${fmtDate(todayStr())}</div>
-      <h2>Wartungen</h2>
-      ${wartungenHtml || '<p style="color:#aaa">Keine Wartungen erfasst.</p>'}
-      ${reparaturenHtml}
-      <script>window.onload=()=>window.print();<\/script>
-    </body></html>`;
-
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-  }
-
   // ── Export / Import ──────────────────────────────────────────────────────────
   function exportData() {
     const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs };
@@ -1002,7 +942,7 @@
     openRepairModal, saveRepair, deleteRepair,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
-    exportData, importData, fixYear, exportPdf,
+    exportData, importData, fixYear,
   });
 
   // Expose currentVehicleId for inline onclick
