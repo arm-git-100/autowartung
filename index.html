@@ -599,16 +599,16 @@
       return;
     }
     list.innerHTML = vehicles.map(v => {
-      const statuses = maintenanceTypes.map(t => getStatus(getLastRecord(v.id,t.id), t, v.mileage));
+      const recordedTypes = maintenanceTypes.filter(t => maintenanceRecords.some(r=>r.vehicleId===v.id&&r.typeId===t.id));
       const counts = {overdue:0, soon:0, ok:0};
-      statuses.forEach(s => { if (counts[s]!==undefined) counts[s]++; });
+      recordedTypes.forEach(t => { const s=getStatus(getLastRecord(v.id,t.id),t,v.mileage); if(counts[s]!==undefined) counts[s]++; });
       const worst = counts.overdue?'overdue':counts.soon?'soon':counts.ok?'ok':'none';
       const borderColor = {overdue:'#e53935',soon:'#fb8c00',ok:'#43a047',none:'#bdbdbd'}[worst];
-      const summary = [
-        counts.overdue ? `<span class="badge badge-overdue">🔴 ${counts.overdue} Überfällig</span>` : '',
-        counts.soon    ? `<span class="badge badge-soon">⚠️ ${counts.soon} Bald fällig</span>`    : '',
-        counts.ok      ? `<span class="badge badge-ok">✅ ${counts.ok} OK</span>`                  : '',
-      ].join('');
+      const total = counts.overdue + counts.soon + counts.ok;
+      const summary = total === 0 ? '' : `
+        <span class="badge badge-overdue">🔴 ${counts.overdue}</span>
+        <span class="badge badge-soon">⚠️ ${counts.soon}</span>
+        <span class="badge badge-ok">✅ ${counts.ok}</span>`;
       return `<div class="vehicle-card" onclick="window.showDetail('${v.id}')" style="border-left-color:${borderColor}">
         <div class="vehicle-card-top">
           <div class="vehicle-title">🚗 ${escHtml(v.type)}</div>
