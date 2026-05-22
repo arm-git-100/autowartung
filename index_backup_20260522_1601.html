@@ -149,14 +149,6 @@
     .repair-desc { font-weight:600; font-size:.95rem; flex:1; padding-right:10px; }
     .repair-meta { font-size:.82rem; color:#888; }
 
-    /* ── Services ── */
-    .service-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:14px 16px; margin-bottom:10px; border-left:4px solid #00897b; }
-    .service-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:10px; }
-    .service-workshop { font-weight:700; font-size:.95rem; }
-    .service-cost { color:#00897b; font-weight:700; font-size:.95rem; white-space:nowrap; }
-    .service-desc { font-size:.88rem; color:#444; margin:4px 0 6px; white-space:pre-wrap; }
-    .service-meta { font-size:.82rem; color:#888; }
-
     /* ── Type list ── */
     .type-list { margin-bottom:12px; }
     .type-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:.9rem; }
@@ -261,16 +253,14 @@
       <div class="detail-actions">
         <button class="btn btn-primary btn-sm" onclick="window.openMileageModal()">📍 Km aktualisieren</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
-        <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStammdatenModal()">📋 Stammdaten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.exportPdf()">📄 PDF</button>
         <button class="btn btn-danger btn-sm" onclick="window.deleteVehicle()">🗑️ Löschen</button>
       </div>
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" id="tabWartungen"     onclick="window.switchTab('wartungen')">🔧 Wartungen</button>
-      <button class="tab-btn"        id="tabReparaturen"   onclick="window.switchTab('reparaturen')">🔨 Reparaturen</button>
-      <button class="tab-btn"        id="tabKundendienste" onclick="window.switchTab('kundendienste')">🛠️ Kundendienste</button>
+      <button class="tab-btn active" id="tabWartungen"   onclick="window.switchTab('wartungen')">🔧 Wartungen</button>
+      <button class="tab-btn"        id="tabReparaturen" onclick="window.switchTab('reparaturen')">🔨 Reparaturen</button>
     </div>
 
     <div id="tabContentWartungen">
@@ -293,14 +283,6 @@
         <button class="btn btn-primary btn-sm" onclick="window.openRepairModal()">+ Reparatur</button>
       </div>
       <div id="repairList"></div>
-    </div>
-
-    <div id="tabContentKundendienste" style="display:none">
-      <div class="section-header">
-        <h3>Kundendienste</h3>
-        <button class="btn btn-primary btn-sm" onclick="window.openServiceModal()">+ Kundendienst</button>
-      </div>
-      <div id="serviceList"></div>
     </div>
   </div>
 </main>
@@ -391,57 +373,6 @@
   </div>
 </div>
 
-<!-- Modal: Stammdaten -->
-<div class="modal-overlay" id="modalStammdaten">
-  <div class="modal">
-    <h3>Stammdaten</h3>
-    <div class="form-row">
-      <div class="form-group"><label>Modell</label><input type="text" id="sdModel" placeholder="z.B. Golf VII GTI"></div>
-      <div class="form-group"><label>Fahrgestellnummer</label><input type="text" id="sdVin" placeholder="VIN"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Erstzulassung</label><input type="date" id="sdFirstReg" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Farbcode</label><input type="text" id="sdColor" placeholder="z.B. LC9X"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Schlüssel 2.1</label><input type="text" id="sdKey21" placeholder="HSN"></div>
-      <div class="form-group"><label>Schlüssel 2.2</label><input type="text" id="sdKey22" placeholder="TSN"></div>
-    </div>
-    <div class="form-group"><label>Öl Norm/Menge</label><input type="text" id="sdOil" placeholder="z.B. 5W-30 VW 504.00 / 4,3 L"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Reifengröße Sommer</label><input type="text" id="sdTireSummer" placeholder="z.B. 225/45 R17"></div>
-      <div class="form-group"><label>Reifengröße Winter</label><input type="text" id="sdTireWinter" placeholder="z.B. 205/55 R16"></div>
-    </div>
-    <div class="form-group"><label>Batterie Nettokapazität</label><input type="text" id="sdBatCap" placeholder="z.B. 77 kWh"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Batterie SoH (%)</label><input type="number" step="0.1" id="sdBatSoh" placeholder="z.B. 96.5"></div>
-      <div class="form-group"><label>SoH gemessen am</label><input type="date" id="sdBatSohDate" onchange="window.fixYear(this)"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" style="background:#eee" onclick="window.closeModal('modalStammdaten')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="window.saveStammdaten()">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Kundendienst -->
-<div class="modal-overlay" id="modalService">
-  <div class="modal">
-    <h3 id="modalServiceTitle">Kundendienst erfassen</h3>
-    <div class="form-row">
-      <div class="form-group"><label>Datum</label><input type="date" id="sDate" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Kilometerstand</label><input type="number" id="sMileage" placeholder="z.B. 87500"></div>
-    </div>
-    <div class="form-group"><label>Werkstatt</label><input type="text" id="sWorkshop" placeholder="z.B. Autohaus Müller"></div>
-    <div class="form-group"><label>Was wurde gemacht</label><input type="text" id="sDesc" placeholder="z.B. Inspektion 60.000 km, Ölwechsel, Bremsen geprüft..."></div>
-    <div class="form-group"><label>Kosten (€)</label><input type="number" step="0.01" id="sCost" placeholder="z.B. 459.90"></div>
-    <div class="modal-actions">
-      <button class="btn" style="background:#eee" onclick="window.closeModal('modalService')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="window.saveService()">Speichern</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal: Wartungstyp -->
 <div class="modal-overlay" id="modalType">
   <div class="modal">
@@ -486,14 +417,13 @@
   const typesCol    = collection(db, 'maintenanceTypes');
   const recordsCol  = collection(db, 'maintenanceRecords');
   const repairsCol  = collection(db, 'repairs');
-  const servicesCol = collection(db, 'services');
 
   // ── State ───────────────────────────────────────────────────────────────────
-  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [];
+  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [];
   let currentVehicleId = null, activeTab = 'wartungen';
   let appReady = false, typesSeeded = false;
   const collectionsReady = new Set();
-  let editingRecordId = null, editingRepairId = null, editingTypeId = null, editingServiceId = null;
+  let editingRecordId = null, editingRepairId = null, editingTypeId = null;
 
   const DEFAULT_TYPES = [
     { id:'exhaust',       name:'Auspuff',                icon:'💨' },
@@ -580,16 +510,11 @@
       repairs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       markReady('repairs');
     }, handleFbError);
-
-    onSnapshot(servicesCol, snap => {
-      services = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      markReady('services');
-    }, handleFbError);
   }
 
   function markReady(name) {
     collectionsReady.add(name);
-    if (collectionsReady.size >= 5 && !appReady) {
+    if (collectionsReady.size >= 4 && !appReady) {
       appReady = true;
       showScreen('app');
     }
@@ -617,8 +542,7 @@
     if (currentVehicleId) {
       if (!vehicles.find(v => v.id === currentVehicleId)) { showDashboard(); return; }
       renderDetail();
-      if (activeTab === 'reparaturen')   renderRepairs();
-      if (activeTab === 'kundendienste') renderServices();
+      if (activeTab === 'reparaturen') renderRepairs();
     } else {
       renderDashboard();
     }
@@ -626,7 +550,6 @@
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function fmtKm(km) { return km != null ? Number(km).toLocaleString('de-DE') + ' km' : '–'; }
-  function fmtEur(c)  { return c != null ? Number(c).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €' : '–'; }
   function drivetrainLabel(d) { return {Benziner:'⛽ Benziner',Diesel:'🛢️ Diesel',Elektro:'⚡ Elektro',Hybrid:'🔋 Hybrid'}[d] || ''; }
   function fmtDate(s) { if (!s) return '–'; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}`; }
   function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -807,14 +730,11 @@
   // ── Tabs ─────────────────────────────────────────────────────────────────────
   function switchTab(tab) {
     activeTab = tab;
-    document.getElementById('tabContentWartungen').style.display     = tab==='wartungen'     ? '' : 'none';
-    document.getElementById('tabContentReparaturen').style.display   = tab==='reparaturen'   ? '' : 'none';
-    document.getElementById('tabContentKundendienste').style.display = tab==='kundendienste' ? '' : 'none';
-    document.getElementById('tabWartungen').classList.toggle('active',     tab==='wartungen');
-    document.getElementById('tabReparaturen').classList.toggle('active',   tab==='reparaturen');
-    document.getElementById('tabKundendienste').classList.toggle('active', tab==='kundendienste');
-    if (tab==='reparaturen')   renderRepairs();
-    if (tab==='kundendienste') renderServices();
+    document.getElementById('tabContentWartungen').style.display   = tab==='wartungen'   ? '' : 'none';
+    document.getElementById('tabContentReparaturen').style.display = tab==='reparaturen' ? '' : 'none';
+    document.getElementById('tabWartungen').classList.toggle('active',   tab==='wartungen');
+    document.getElementById('tabReparaturen').classList.toggle('active', tab==='reparaturen');
+    if (tab==='reparaturen') renderRepairs();
   }
 
   // ── Modals ───────────────────────────────────────────────────────────────────
@@ -854,7 +774,6 @@
     batch.delete(doc(db,'vehicles',currentVehicleId));
     maintenanceRecords.filter(r=>r.vehicleId===currentVehicleId).forEach(r=>batch.delete(doc(db,'maintenanceRecords',r.id)));
     repairs.filter(r=>r.vehicleId===currentVehicleId).forEach(r=>batch.delete(doc(db,'repairs',r.id)));
-    services.filter(s=>s.vehicleId===currentVehicleId).forEach(s=>batch.delete(doc(db,'services',s.id)));
     await batch.commit();
     currentVehicleId = null;
   }
@@ -953,95 +872,6 @@
     await deleteDoc(doc(db,'repairs',id));
   }
 
-  // Kundendienst
-  function renderServices() {
-    const filtered = services.filter(s=>s.vehicleId===currentVehicleId).sort((a,b)=>b.date.localeCompare(a.date));
-    const list = document.getElementById('serviceList');
-    if (filtered.length===0) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">🛠️</div>Noch kein Kundendienst erfasst.</div>`; return; }
-    list.innerHTML = filtered.map(s=>`<div class="service-card">
-      <div class="service-card-top">
-        <span class="service-workshop">🏭 ${escHtml(s.workshop||'–')}</span>
-        <span class="service-cost">${fmtEur(s.cost)}</span>
-      </div>
-      ${s.description?`<div class="service-desc">${escHtml(s.description)}</div>`:''}
-      <div class="service-card-top" style="margin:0">
-        <div class="service-meta">📅 ${fmtDate(s.date)} &nbsp;·&nbsp; 📍 ${fmtKm(s.mileage)}</div>
-        <div style="display:flex;gap:4px;flex-shrink:0">
-          <button class="btn-icon" onclick="window.openServiceModal('${s.id}')">✏️</button>
-          <button class="btn-icon" onclick="window.deleteService('${s.id}')">🗑️</button>
-        </div>
-      </div>
-    </div>`).join('');
-  }
-
-  function openServiceModal(id=null) {
-    editingServiceId=id;
-    document.getElementById('modalServiceTitle').textContent = id ? 'Kundendienst bearbeiten' : 'Kundendienst erfassen';
-    const s=id ? services.find(s=>s.id===id) : null;
-    document.getElementById('sDate').value     = s?.date        || todayStr();
-    document.getElementById('sMileage').value  = s?.mileage     ?? vehicles.find(v=>v.id===currentVehicleId)?.mileage ?? '';
-    document.getElementById('sWorkshop').value = s?.workshop    || '';
-    document.getElementById('sDesc').value     = s?.description || '';
-    document.getElementById('sCost').value     = s?.cost        ?? '';
-    openModal('modalService');
-  }
-
-  async function saveService() {
-    const date=document.getElementById('sDate').value;
-    const mileage=document.getElementById('sMileage').value ? parseInt(document.getElementById('sMileage').value) : null;
-    const workshop=document.getElementById('sWorkshop').value.trim();
-    const description=document.getElementById('sDesc').value.trim();
-    const cost=document.getElementById('sCost').value ? parseFloat(document.getElementById('sCost').value) : null;
-    if (!date) return alert('Bitte Datum eingeben.');
-    const data = {vehicleId:currentVehicleId,date,mileage,workshop,description,cost};
-    if (editingServiceId) { await updateDoc(doc(db,'services',editingServiceId), data); }
-    else { await addDoc(servicesCol, data); }
-    editingServiceId=null;
-    closeModal('modalService');
-  }
-
-  async function deleteService(id) {
-    if (!confirm('Kundendienst löschen?')) return;
-    await deleteDoc(doc(db,'services',id));
-  }
-
-  // Stammdaten
-  function openStammdatenModal() {
-    const v = vehicles.find(v=>v.id===currentVehicleId); if (!v) return;
-    document.getElementById('sdModel').value       = v.model         || '';
-    document.getElementById('sdVin').value         = v.vin           || '';
-    document.getElementById('sdFirstReg').value    = v.firstReg      || '';
-    document.getElementById('sdColor').value       = v.colorCode     || '';
-    document.getElementById('sdKey21').value       = v.key21         || '';
-    document.getElementById('sdKey22').value       = v.key22         || '';
-    document.getElementById('sdOil').value         = v.oilSpec       || '';
-    document.getElementById('sdTireSummer').value  = v.tireSummer    || '';
-    document.getElementById('sdTireWinter').value  = v.tireWinter    || '';
-    document.getElementById('sdBatCap').value      = v.batteryCap    || '';
-    document.getElementById('sdBatSoh').value      = v.batterySoh    ?? '';
-    document.getElementById('sdBatSohDate').value  = v.batterySohDate|| '';
-    openModal('modalStammdaten');
-  }
-
-  async function saveStammdaten() {
-    const data = {
-      model:          document.getElementById('sdModel').value.trim()      || null,
-      vin:            document.getElementById('sdVin').value.trim()        || null,
-      firstReg:       document.getElementById('sdFirstReg').value          || null,
-      colorCode:      document.getElementById('sdColor').value.trim()      || null,
-      key21:          document.getElementById('sdKey21').value.trim()      || null,
-      key22:          document.getElementById('sdKey22').value.trim()      || null,
-      oilSpec:        document.getElementById('sdOil').value.trim()        || null,
-      tireSummer:     document.getElementById('sdTireSummer').value.trim() || null,
-      tireWinter:     document.getElementById('sdTireWinter').value.trim() || null,
-      batteryCap:     document.getElementById('sdBatCap').value.trim()     || null,
-      batterySoh:     document.getElementById('sdBatSoh').value ? parseFloat(document.getElementById('sdBatSoh').value) : null,
-      batterySohDate: document.getElementById('sdBatSohDate').value        || null,
-    };
-    await updateDoc(doc(db,'vehicles',currentVehicleId), data);
-    closeModal('modalStammdaten');
-  }
-
   // Wartungstyp
   function openTypeModal(id=null) {
     editingTypeId=id;
@@ -1082,25 +912,7 @@
       .filter(t => maintenanceRecords.some(r=>r.vehicleId===v.id&&r.typeId===t.id))
       .sort((a,b)=>a.name.localeCompare(b.name,'de'));
 
-    const vRepairs  = repairs.filter(r=>r.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
-    const vServices = services.filter(s=>s.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
-
-    const stammRows = [
-      ['Modell',                 v.model],
-      ['Fahrgestellnummer',      v.vin],
-      ['Erstzulassung',          v.firstReg ? fmtDate(v.firstReg) : null],
-      ['Farbcode',               v.colorCode],
-      ['Schlüssel 2.1',          v.key21],
-      ['Schlüssel 2.2',          v.key22],
-      ['Öl Norm/Menge',          v.oilSpec],
-      ['Reifengröße Sommer',     v.tireSummer],
-      ['Reifengröße Winter',     v.tireWinter],
-      ['Batterie Nettokapazität',v.batteryCap],
-      ['Batterie SoH',           v.batterySoh != null ? v.batterySoh + ' %' + (v.batterySohDate ? ' (' + fmtDate(v.batterySohDate) + ')' : '') : null],
-    ].filter(([_,val]) => val);
-    const stammHtml = stammRows.length ? `
-      <h2>Stammdaten</h2>
-      <table><tbody>${stammRows.map(([k,val])=>`<tr><th style="text-align:left;background:#e8eaf6;color:#3f51b5;width:200px">${k}</th><td>${val}</td></tr>`).join('')}</tbody></table>` : '';
+    const vRepairs = repairs.filter(r=>r.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
 
     const wartungenHtml = typesWithRecords.map(t => {
       const allRecs = maintenanceRecords.filter(r=>r.vehicleId===v.id&&r.typeId===t.id).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1122,13 +934,6 @@
       <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Beschreibung</th></tr></thead>
       <tbody>${vRepairs.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.mileage!=null?fmtKm(r.mileage):'–'}</td><td>${r.description}</td></tr>`).join('')}</tbody></table>` : '';
 
-    const kdSum = vServices.reduce((sum,s)=>sum+(s.cost||0),0);
-    const kundendiensteHtml = vServices.length ? `
-      <h2>Kundendienste</h2>
-      <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Werkstatt</th><th>Beschreibung</th><th style="text-align:right">Kosten</th></tr></thead>
-      <tbody>${vServices.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.mileage!=null?fmtKm(s.mileage):'–'}</td><td>${s.workshop||''}</td><td>${s.description||''}</td><td style="text-align:right">${fmtEur(s.cost)}</td></tr>`).join('')}
-      <tr><td colspan="4" style="text-align:right;font-weight:700">Summe:</td><td style="text-align:right;font-weight:700">${fmtEur(kdSum)}</td></tr></tbody></table>` : '';
-
     const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
       <title>Wartungshistorie – ${v.type} ${v.plate}</title>
       <style>
@@ -1145,11 +950,9 @@
       </style></head><body>
       <h1>🚗 ${v.type} &nbsp; <span style="font-size:.8em;color:#3f51b5">${v.plate}</span></h1>
       <div class="meta">👤 ${v.user}${v.drivetrain ? ' &nbsp;·&nbsp; ' + drivetrainLabel(v.drivetrain) : ''} &nbsp;·&nbsp; 📍 ${fmtKm(v.mileage)} &nbsp;·&nbsp; Stand: ${fmtDate(v.mileageDate)} &nbsp;·&nbsp; Erstellt: ${fmtDate(todayStr())}</div>
-      ${stammHtml}
       <h2>Wartungen</h2>
       ${wartungenHtml || '<p style="color:#aaa">Keine Wartungen erfasst.</p>'}
       ${reparaturenHtml}
-      ${kundendiensteHtml}
       <script>window.onload=()=>window.print();<\/script>
     </body></html>`;
 
@@ -1160,7 +963,7 @@
 
   // ── Export / Import ──────────────────────────────────────────────────────────
   function exportData() {
-    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs, services };
+    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs };
     const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     const url  = URL.createObjectURL(blob);
     const a    = Object.assign(document.createElement('a'), {href:url, download:`autowartung_backup_${todayStr()}.json`});
@@ -1177,12 +980,8 @@
         if (!confirm('Alle aktuellen Daten werden ersetzt. Fortfahren?')) return;
 
         const b1 = writeBatch(db);
-        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs,...services].forEach(x => {
-          const col = vehicles.includes(x)?'vehicles'
-                    : maintenanceTypes.includes(x)?'maintenanceTypes'
-                    : maintenanceRecords.includes(x)?'maintenanceRecords'
-                    : repairs.includes(x)?'repairs'
-                    : 'services';
+        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs].forEach(x => {
+          const col = vehicles.includes(x)?'vehicles':maintenanceTypes.includes(x)?'maintenanceTypes':maintenanceRecords.includes(x)?'maintenanceRecords':'repairs';
           b1.delete(doc(db,col,x.id));
         });
         await b1.commit();
@@ -1193,7 +992,6 @@
         write('maintenanceTypes',  imp.maintenanceTypes);
         write('maintenanceRecords',imp.maintenanceRecords);
         write('repairs',           imp.repairs);
-        write('services',          imp.services);
         await b2.commit();
         alert('✅ Import erfolgreich!');
       } catch(err) { alert('Fehler: '+err.message); }
@@ -1214,8 +1012,6 @@
     openMileageModal, saveMileage,
     openMaintenanceModal, saveMaintenance, deleteRecord, fillTypeDefaults,
     openRepairModal, saveRepair, deleteRepair,
-    openServiceModal, saveService, deleteService,
-    openStammdatenModal, saveStammdaten,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
     exportData, importData, fixYear, exportPdf,
