@@ -173,18 +173,11 @@
     .modal h3 { font-size:1.1rem; margin-bottom:16px; }
     .form-group { margin-bottom:14px; }
     .form-group label { display:block; font-size:.85rem; font-weight:600; color:#555; margin-bottom:4px; }
-    .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border:2px solid #ddd; border-radius:8px; font-size:1rem; outline:none; transition:border-color .2s; font-family:inherit; }
-    .form-group textarea { resize:vertical; min-height:80px; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#3f51b5; }
+    .form-group input, .form-group select { width:100%; padding:10px 12px; border:2px solid #ddd; border-radius:8px; font-size:1rem; outline:none; transition:border-color .2s; }
+    .form-group input:focus, .form-group select:focus { border-color:#3f51b5; }
     .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .modal-actions { display:flex; gap:10px; margin-top:20px; }
     .modal-actions .btn { flex:1; padding:12px; font-size:1rem; }
-
-    .soh-row { display:flex; align-items:center; gap:10px; padding:6px 10px; background:#f5f5f5; border-radius:6px; margin-bottom:4px; font-size:.9rem; }
-    .soh-row .soh-val { font-weight:700; color:#3f51b5; min-width:60px; }
-    .soh-row .soh-date { color:#666; flex:1; }
-    .soh-row .soh-del { opacity:.5; cursor:pointer; background:none; border:none; font-size:1rem; }
-    .soh-row .soh-del:hover { opacity:1; color:#e53935; }
 
     .empty-state { text-align:center; color:#bbb; padding:40px 20px; font-size:.95rem; }
     .empty-state .empty-icon { font-size:3rem; margin-bottom:8px; }
@@ -386,14 +379,10 @@
 <div class="modal-overlay" id="modalRepair">
   <div class="modal">
     <h3 id="modalRepairTitle">Reparatur erfassen</h3>
-    <div class="form-group"><label>Beschreibung</label><textarea id="rDesc" rows="4" placeholder="z.B. Stoßdämpfer getauscht..."></textarea></div>
+    <div class="form-group"><label>Beschreibung</label><input type="text" id="rDesc" placeholder="z.B. Stoßdämpfer getauscht..."></div>
     <div class="form-row">
       <div class="form-group"><label>Datum</label><input type="date" id="rDate" onchange="window.fixYear(this)"></div>
       <div class="form-group"><label>Kilometerstand</label><input type="number" id="rMileage" placeholder="z.B. 87500"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Werkstatt</label><input type="text" id="rWorkshop" placeholder="z.B. Autohaus Müller"></div>
-      <div class="form-group"><label>Kosten (€)</label><input type="number" step="0.01" id="rCost" placeholder="z.B. 249.90"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalRepair')">Abbrechen</button>
@@ -424,14 +413,9 @@
       <div class="form-group"><label>Reifengröße Winter</label><input type="text" id="sdTireWinter" placeholder="z.B. 205/55 R16"></div>
     </div>
     <div class="form-group"><label>Batterie Nettokapazität</label><input type="text" id="sdBatCap" placeholder="z.B. 77 kWh"></div>
-    <div class="form-group">
-      <label>Batterie SoH-Historie</label>
-      <div id="sdSohList" style="margin-bottom:8px"></div>
-      <div class="form-row" style="margin-bottom:0">
-        <div class="form-group" style="margin:0"><input type="number" step="0.1" id="sdBatSohNew" placeholder="SoH %"></div>
-        <div class="form-group" style="margin:0"><input type="date" id="sdBatSohDateNew" onchange="window.fixYear(this)"></div>
-      </div>
-      <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5;margin-top:8px" onclick="window.addSohEntry()">+ Eintrag hinzufügen</button>
+    <div class="form-row">
+      <div class="form-group"><label>Batterie SoH (%)</label><input type="number" step="0.1" id="sdBatSoh" placeholder="z.B. 96.5"></div>
+      <div class="form-group"><label>SoH gemessen am</label><input type="date" id="sdBatSohDate" onchange="window.fixYear(this)"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalStammdaten')">Abbrechen</button>
@@ -449,7 +433,7 @@
       <div class="form-group"><label>Kilometerstand</label><input type="number" id="sMileage" placeholder="z.B. 87500"></div>
     </div>
     <div class="form-group"><label>Werkstatt</label><input type="text" id="sWorkshop" placeholder="z.B. Autohaus Müller"></div>
-    <div class="form-group"><label>Was wurde gemacht</label><textarea id="sDesc" rows="5" placeholder="z.B. Inspektion 60.000 km, Ölwechsel, Bremsen geprüft..."></textarea></div>
+    <div class="form-group"><label>Was wurde gemacht</label><input type="text" id="sDesc" placeholder="z.B. Inspektion 60.000 km, Ölwechsel, Bremsen geprüft..."></div>
     <div class="form-group"><label>Kosten (€)</label><input type="number" step="0.01" id="sCost" placeholder="z.B. 459.90"></div>
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalService')">Abbrechen</button>
@@ -510,7 +494,6 @@
   let appReady = false, typesSeeded = false;
   const collectionsReady = new Set();
   let editingRecordId = null, editingRepairId = null, editingTypeId = null, editingServiceId = null;
-  let sohHistoryDraft = [];
 
   const DEFAULT_TYPES = [
     { id:'exhaust',       name:'Auspuff',                icon:'💨' },
@@ -811,14 +794,13 @@
     if (filtered.length===0) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">🔨</div>Noch keine Reparatur erfasst.</div>`; return; }
     list.innerHTML = filtered.map(r=>`<div class="repair-card">
       <div class="repair-card-top">
-        <span class="repair-desc" style="white-space:pre-wrap">${escHtml(r.description)}</span>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          ${r.cost!=null?`<span style="color:#9c27b0;font-weight:700;font-size:.9rem;white-space:nowrap">${fmtEur(r.cost)}</span>`:''}
+        <span class="repair-desc">${escHtml(r.description)}</span>
+        <div style="display:flex;gap:4px;flex-shrink:0">
           <button class="btn-icon" onclick="window.openRepairModal('${r.id}')">✏️</button>
           <button class="btn-icon" onclick="window.deleteRepair('${r.id}')">🗑️</button>
         </div>
       </div>
-      <div class="repair-meta">📅 ${fmtDate(r.date)} &nbsp;·&nbsp; 📍 ${fmtKm(r.mileage)}${r.workshop?' &nbsp;·&nbsp; 🏭 '+escHtml(r.workshop):''}</div>
+      <div class="repair-meta">📅 ${fmtDate(r.date)} &nbsp;·&nbsp; 📍 ${fmtKm(r.mileage)}</div>
     </div>`).join('');
   }
 
@@ -949,21 +931,17 @@
     editingRepairId=id;
     document.getElementById('modalRepairTitle').textContent = id ? 'Reparatur bearbeiten' : 'Reparatur erfassen';
     const r=id ? repairs.find(r=>r.id===id) : null;
-    document.getElementById('rDesc').value     = r?.description || '';
-    document.getElementById('rDate').value     = r?.date        || todayStr();
-    document.getElementById('rMileage').value  = r?.mileage     || vehicles.find(v=>v.id===currentVehicleId)?.mileage || '';
-    document.getElementById('rWorkshop').value = r?.workshop    || '';
-    document.getElementById('rCost').value     = r?.cost        ?? '';
+    document.getElementById('rDesc').value    = r?.description || '';
+    document.getElementById('rDate').value    = r?.date        || todayStr();
+    document.getElementById('rMileage').value = r?.mileage     || vehicles.find(v=>v.id===currentVehicleId)?.mileage || '';
     openModal('modalRepair');
   }
 
   async function saveRepair() {
     const description=document.getElementById('rDesc').value.trim(), date=document.getElementById('rDate').value;
     const mileage=parseInt(document.getElementById('rMileage').value);
-    const workshop=document.getElementById('rWorkshop').value.trim() || null;
-    const cost=document.getElementById('rCost').value ? parseFloat(document.getElementById('rCost').value) : null;
     if (!description) return alert('Bitte eine Beschreibung eingeben.');
-    const repData = {vehicleId:currentVehicleId,description,date,mileage,workshop,cost};
+    const repData = {vehicleId:currentVehicleId,description,date,mileage};
     if (editingRepairId) { await updateDoc(doc(db,'repairs',editingRepairId), repData); }
     else { await addDoc(repairsCol, repData); }
     editingRepairId=null;
@@ -1040,65 +1018,25 @@
     document.getElementById('sdTireSummer').value  = v.tireSummer    || '';
     document.getElementById('sdTireWinter').value  = v.tireWinter    || '';
     document.getElementById('sdBatCap').value      = v.batteryCap    || '';
-
-    // SoH-Historie: bevorzugt batterySohHistory, sonst Migration von altem Einzelwert
-    if (Array.isArray(v.batterySohHistory)) {
-      sohHistoryDraft = v.batterySohHistory.map(e => ({...e}));
-    } else if (v.batterySoh != null) {
-      sohHistoryDraft = [{value: v.batterySoh, date: v.batterySohDate || todayStr()}];
-    } else {
-      sohHistoryDraft = [];
-    }
-    document.getElementById('sdBatSohNew').value = '';
-    document.getElementById('sdBatSohDateNew').value = todayStr();
-    renderSohList();
+    document.getElementById('sdBatSoh').value      = v.batterySoh    ?? '';
+    document.getElementById('sdBatSohDate').value  = v.batterySohDate|| '';
     openModal('modalStammdaten');
-  }
-
-  function renderSohList() {
-    const sorted = [...sohHistoryDraft].sort((a,b)=>b.date.localeCompare(a.date));
-    document.getElementById('sdSohList').innerHTML = sorted.length === 0
-      ? '<div style="color:#aaa;font-size:.85rem;padding:4px 0">Noch keine SoH-Messung erfasst.</div>'
-      : sorted.map(e => {
-          const idx = sohHistoryDraft.indexOf(e);
-          return `<div class="soh-row">
-            <span class="soh-val">${e.value} %</span>
-            <span class="soh-date">${fmtDate(e.date)}</span>
-            <button class="soh-del" onclick="window.removeSohEntry(${idx})">🗑️</button>
-          </div>`;
-        }).join('');
-  }
-
-  function addSohEntry() {
-    const val = document.getElementById('sdBatSohNew').value;
-    const date = document.getElementById('sdBatSohDateNew').value;
-    if (!val || !date) return alert('Bitte SoH-Wert und Datum eingeben.');
-    sohHistoryDraft.push({ value: parseFloat(val), date });
-    document.getElementById('sdBatSohNew').value = '';
-    document.getElementById('sdBatSohDateNew').value = todayStr();
-    renderSohList();
-  }
-
-  function removeSohEntry(idx) {
-    sohHistoryDraft.splice(idx, 1);
-    renderSohList();
   }
 
   async function saveStammdaten() {
     const data = {
-      model:             document.getElementById('sdModel').value.trim()      || null,
-      vin:               document.getElementById('sdVin').value.trim()        || null,
-      firstReg:          document.getElementById('sdFirstReg').value          || null,
-      colorCode:         document.getElementById('sdColor').value.trim()      || null,
-      key21:             document.getElementById('sdKey21').value.trim()      || null,
-      key22:             document.getElementById('sdKey22').value.trim()      || null,
-      oilSpec:           document.getElementById('sdOil').value.trim()        || null,
-      tireSummer:        document.getElementById('sdTireSummer').value.trim() || null,
-      tireWinter:        document.getElementById('sdTireWinter').value.trim() || null,
-      batteryCap:        document.getElementById('sdBatCap').value.trim()     || null,
-      batterySohHistory: sohHistoryDraft.length ? sohHistoryDraft : null,
-      batterySoh:        null,
-      batterySohDate:    null,
+      model:          document.getElementById('sdModel').value.trim()      || null,
+      vin:            document.getElementById('sdVin').value.trim()        || null,
+      firstReg:       document.getElementById('sdFirstReg').value          || null,
+      colorCode:      document.getElementById('sdColor').value.trim()      || null,
+      key21:          document.getElementById('sdKey21').value.trim()      || null,
+      key22:          document.getElementById('sdKey22').value.trim()      || null,
+      oilSpec:        document.getElementById('sdOil').value.trim()        || null,
+      tireSummer:     document.getElementById('sdTireSummer').value.trim() || null,
+      tireWinter:     document.getElementById('sdTireWinter').value.trim() || null,
+      batteryCap:     document.getElementById('sdBatCap').value.trim()     || null,
+      batterySoh:     document.getElementById('sdBatSoh').value ? parseFloat(document.getElementById('sdBatSoh').value) : null,
+      batterySohDate: document.getElementById('sdBatSohDate').value        || null,
     };
     await updateDoc(doc(db,'vehicles',currentVehicleId), data);
     closeModal('modalStammdaten');
@@ -1158,9 +1096,7 @@
       ['Reifengröße Sommer',     v.tireSummer],
       ['Reifengröße Winter',     v.tireWinter],
       ['Batterie Nettokapazität',v.batteryCap],
-      ['Batterie SoH',           (Array.isArray(v.batterySohHistory) && v.batterySohHistory.length)
-                                   ? [...v.batterySohHistory].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`${e.value} % (${fmtDate(e.date)})`).join('<br>')
-                                   : (v.batterySoh != null ? v.batterySoh + ' %' + (v.batterySohDate ? ' (' + fmtDate(v.batterySohDate) + ')' : '') : null)],
+      ['Batterie SoH',           v.batterySoh != null ? v.batterySoh + ' %' + (v.batterySohDate ? ' (' + fmtDate(v.batterySohDate) + ')' : '') : null],
     ].filter(([_,val]) => val);
     const stammHtml = stammRows.length ? `
       <h2>Stammdaten</h2>
@@ -1181,18 +1117,16 @@
         <tbody>${rows}</tbody></table>`;
     }).join('');
 
-    const repSum = vRepairs.reduce((sum,r)=>sum+(r.cost||0),0);
     const reparaturenHtml = vRepairs.length ? `
       <h2>Reparaturen</h2>
-      <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Werkstatt</th><th>Beschreibung</th><th style="text-align:right">Kosten</th></tr></thead>
-      <tbody>${vRepairs.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.mileage!=null?fmtKm(r.mileage):'–'}</td><td>${r.workshop||''}</td><td style="white-space:pre-wrap">${r.description}</td><td style="text-align:right">${fmtEur(r.cost)}</td></tr>`).join('')}
-      <tr><td colspan="4" style="text-align:right;font-weight:700">Summe:</td><td style="text-align:right;font-weight:700">${fmtEur(repSum)}</td></tr></tbody></table>` : '';
+      <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Beschreibung</th></tr></thead>
+      <tbody>${vRepairs.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.mileage!=null?fmtKm(r.mileage):'–'}</td><td>${r.description}</td></tr>`).join('')}</tbody></table>` : '';
 
     const kdSum = vServices.reduce((sum,s)=>sum+(s.cost||0),0);
     const kundendiensteHtml = vServices.length ? `
       <h2>Kundendienste</h2>
       <table><thead><tr><th>Datum</th><th>Kilometerstand</th><th>Werkstatt</th><th>Beschreibung</th><th style="text-align:right">Kosten</th></tr></thead>
-      <tbody>${vServices.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.mileage!=null?fmtKm(s.mileage):'–'}</td><td>${s.workshop||''}</td><td style="white-space:pre-wrap">${s.description||''}</td><td style="text-align:right">${fmtEur(s.cost)}</td></tr>`).join('')}
+      <tbody>${vServices.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.mileage!=null?fmtKm(s.mileage):'–'}</td><td>${s.workshop||''}</td><td>${s.description||''}</td><td style="text-align:right">${fmtEur(s.cost)}</td></tr>`).join('')}
       <tr><td colspan="4" style="text-align:right;font-weight:700">Summe:</td><td style="text-align:right;font-weight:700">${fmtEur(kdSum)}</td></tr></tbody></table>` : '';
 
     const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
@@ -1281,7 +1215,7 @@
     openMaintenanceModal, saveMaintenance, deleteRecord, fillTypeDefaults,
     openRepairModal, saveRepair, deleteRepair,
     openServiceModal, saveService, deleteService,
-    openStammdatenModal, saveStammdaten, addSohEntry, removeSohEntry,
+    openStammdatenModal, saveStammdaten,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
     exportData, importData, fixYear, exportPdf,
