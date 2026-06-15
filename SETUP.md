@@ -60,6 +60,7 @@
 | `repairs` | Reparatureinträge (Beschreibung, Datum, Km) |
 | `services` | Kundendienste (Werkstatt, Beschreibung, Datum, Km, Kosten) |
 | `fuelings` | Tankungen (Voll/Teil, Datum, Km, Liter, Gesamtpreis) |
+| `charges` | Elektro-Ladungen (Heim monatlich / öffentlich, kWh, Km) |
 
 ---
 
