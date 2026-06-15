@@ -58,6 +58,8 @@
 | `maintenanceTypes` | Wartungstypen (Name, Icon, Intervalle) |
 | `maintenanceRecords` | Wartungseinträge (Datum, Km, Intervall, Kommentar) |
 | `repairs` | Reparatureinträge (Beschreibung, Datum, Km) |
+| `services` | Kundendienste (Werkstatt, Beschreibung, Datum, Km, Kosten) |
+| `fuelings` | Tankungen (Voll/Teil, Datum, Km, Liter, Gesamtpreis) |
 
 ---
 
