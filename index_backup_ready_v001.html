@@ -140,14 +140,44 @@
 
     /* ── Tabs ── */
     .tab-bar { display:flex; margin-bottom:16px; background:#f0f2f5; border-radius:10px; padding:4px; }
-    .tab-btn { flex:1; padding:8px; border:none; background:none; border-radius:7px; font-size:.9rem; font-weight:600; color:#888; cursor:pointer; transition:all .2s; }
+    .tab-btn { flex:1; padding:8px 4px; border:none; background:none; border-radius:7px; font-size:.85rem; font-weight:600; color:#888; cursor:pointer; transition:all .2s; white-space:nowrap; }
     .tab-btn.active { background:#fff; color:#3f51b5; box-shadow:0 1px 4px rgba(0,0,0,.1); }
+
+    /* ── Accessories ── */
+    .accessory-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:14px 16px; margin-bottom:10px; border-left:4px solid #d81b60; }
+    .accessory-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:10px; }
+    .accessory-desc { font-weight:600; font-size:.95rem; flex:1; padding-right:10px; white-space:pre-wrap; }
+    .accessory-cost { color:#d81b60; font-weight:700; font-size:.95rem; white-space:nowrap; }
+    .accessory-meta { font-size:.82rem; color:#888; }
+    .accessory-summary { background:#fce4ec; color:#880e4f; padding:10px 14px; border-radius:8px; margin-bottom:12px; font-weight:700; text-align:center; }
 
     /* ── Repairs ── */
     .repair-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:14px 16px; margin-bottom:10px; border-left:4px solid #9c27b0; }
     .repair-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
     .repair-desc { font-weight:600; font-size:.95rem; flex:1; padding-right:10px; }
     .repair-meta { font-size:.82rem; color:#888; }
+
+    /* ── Fuel ── */
+    .fuel-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:12px 14px; margin-bottom:8px; border-left:4px solid #ff9800; }
+    .fuel-card.partial { border-left-color:#9e9e9e; }
+    .fuel-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .fuel-title { font-weight:700; font-size:.92rem; }
+    .fuel-details { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.82rem; color:#666; }
+    .fuel-details .fc-consumption { color:#3f51b5; font-weight:700; }
+    .fuel-stats-card { background:#fff3e0; color:#e65100; padding:12px; border-radius:10px; margin-bottom:14px; }
+    .fuel-stats-row { display:flex; justify-content:space-between; align-items:center; font-size:.9rem; }
+    .fuel-stats-row + .fuel-stats-row { margin-top:4px; padding-top:4px; border-top:1px solid #ffe0b2; }
+    .fuel-stats-big { font-size:1.4rem; font-weight:700; }
+
+    /* ── Charge ── */
+    .charge-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:12px 14px; margin-bottom:8px; border-left:4px solid #03a9f4; }
+    .charge-card.public { border-left-color:#7e57c2; }
+    .charge-stats-card { background:#e1f5fe; color:#01579b; padding:12px; border-radius:10px; margin-bottom:14px; }
+    .charge-stats-card .fuel-stats-row + .fuel-stats-row { border-top-color:#b3e5fc; }
+    .price-edit-row { display:flex; align-items:center; gap:8px; background:#f5f5f5; padding:8px 12px; border-radius:8px; margin-bottom:14px; font-size:.85rem; }
+    .price-edit-row label { color:#666; font-weight:600; flex:1; }
+    .price-edit-row input { width:80px; padding:5px 8px; border:1px solid #ddd; border-radius:6px; font-size:.9rem; outline:none; text-align:right; }
+    .price-edit-row input:focus { border-color:#3f51b5; }
 
     /* ── Services ── */
     .service-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:14px 16px; margin-bottom:10px; border-left:4px solid #00897b; }
@@ -267,6 +297,8 @@
       </div>
       <div class="detail-actions">
         <button class="btn btn-primary btn-sm" onclick="window.openMileageModal()">📍 Km aktualisieren</button>
+        <button class="btn btn-sm" id="btnFuel" style="background:#fff3e0;color:#e65100" onclick="window.openFuelHistoryModal()">⛽ Tanken</button>
+        <button class="btn btn-sm" id="btnCharge" style="background:#e1f5fe;color:#01579b" onclick="window.openChargeHistoryModal()">🔌 Laden</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStammdatenModal()">📋 Stammdaten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.exportPdf()">📄 PDF</button>
@@ -278,6 +310,7 @@
       <button class="tab-btn active" id="tabWartungen"     onclick="window.switchTab('wartungen')">🔧 Wartungen</button>
       <button class="tab-btn"        id="tabReparaturen"   onclick="window.switchTab('reparaturen')">🔨 Reparaturen</button>
       <button class="tab-btn"        id="tabKundendienste" onclick="window.switchTab('kundendienste')">🛠️ Kundendienste</button>
+      <button class="tab-btn"        id="tabZubehoer"      onclick="window.switchTab('zubehoer')">🛍️ Zubehör</button>
     </div>
 
     <div id="tabContentWartungen">
@@ -309,6 +342,15 @@
       </div>
       <div id="serviceList"></div>
     </div>
+
+    <div id="tabContentZubehoer" style="display:none">
+      <div class="section-header">
+        <h3>Zubehör</h3>
+        <button class="btn btn-primary btn-sm" onclick="window.openAccessoryModal()">+ Zubehör</button>
+      </div>
+      <div id="accessorySummary"></div>
+      <div id="accessoryList"></div>
+    </div>
   </div>
 </main>
 
@@ -335,7 +377,7 @@
         </select>
       </div>
     </div>
-    <div class="form-group"><label>Kilometerstand</label><input type="number" id="vMileage" placeholder="z.B. 85000"></div>
+    <div class="form-group"><label>Kilometerstand</label><input type="text" inputmode="numeric" id="vMileage" placeholder="z.B. 85.000"></div>
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalVehicle')">Abbrechen</button>
       <button class="btn btn-primary" onclick="window.saveVehicle()">Speichern</button>
@@ -350,7 +392,7 @@
     <div class="form-group"><label>Wartungstyp</label><select id="mType" onchange="window.fillTypeDefaults()"></select></div>
     <div class="form-row">
       <div class="form-group"><label>Datum</label><input type="date" id="mDate" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Kilometerstand <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="number" id="mMileage" placeholder="z.B. 85000"></div>
+      <div class="form-group"><label>Kilometerstand <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="text" inputmode="numeric" id="mMileage" placeholder="z.B. 85.000"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Ablauf nach km</label><input type="number" id="mIntervalKm" placeholder="z.B. 30000"></div>
@@ -372,7 +414,7 @@
   <div class="modal">
     <h3>Kilometerstand aktualisieren</h3>
     <div class="form-row">
-      <div class="form-group"><label>Neuer Kilometerstand</label><input type="number" id="newMileage" placeholder="z.B. 87500"></div>
+      <div class="form-group"><label>Neuer Kilometerstand</label><input type="text" inputmode="numeric" id="newMileage" placeholder="z.B. 87.500"></div>
       <div class="form-group"><label>Datum</label><input type="date" id="newMileageDate" onchange="window.fixYear(this)"></div>
     </div>
     <div class="modal-actions">
@@ -389,7 +431,7 @@
     <div class="form-group"><label>Beschreibung</label><textarea id="rDesc" rows="4" placeholder="z.B. Stoßdämpfer getauscht..."></textarea></div>
     <div class="form-row">
       <div class="form-group"><label>Datum</label><input type="date" id="rDate" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Kilometerstand</label><input type="number" id="rMileage" placeholder="z.B. 87500"></div>
+      <div class="form-group"><label>Kilometerstand</label><input type="text" inputmode="numeric" id="rMileage" placeholder="z.B. 87.500"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Werkstatt</label><input type="text" id="rWorkshop" placeholder="z.B. Autohaus Müller"></div>
@@ -422,13 +464,16 @@
       <div class="form-group"><label>Kaufdatum</label><input type="date" id="sdPurchaseDate" onchange="window.fixYear(this)"></div>
       <div class="form-group"><label>Kaufpreis (€)</label><input type="number" step="0.01" id="sdPurchasePrice" placeholder="z.B. 18500.00"></div>
     </div>
-    <div class="form-group">
-      <label>Gekauft von</label>
-      <select id="sdPurchaseSource">
-        <option value="">– bitte wählen –</option>
-        <option value="Händler">🏬 Händler</option>
-        <option value="Privat">🤝 Privat</option>
-      </select>
+    <div class="form-row">
+      <div class="form-group"><label>Km-Stand bei Kauf</label><input type="text" inputmode="numeric" id="sdPurchaseMileage" placeholder="z.B. 45.000"></div>
+      <div class="form-group">
+        <label>Gekauft von</label>
+        <select id="sdPurchaseSource">
+          <option value="">– bitte wählen –</option>
+          <option value="Händler">🏬 Händler</option>
+          <option value="Privat">🤝 Privat</option>
+        </select>
+      </div>
     </div>
     <div class="form-group"><label>Zubehör bei Kauf</label><textarea id="sdAccessories" rows="4" placeholder="z.B. 2. Satz Räder, Dachträger, Anhängerkupplung..."></textarea></div>
     <div class="form-group"><label>Öl Norm/Menge</label><input type="text" id="sdOil" placeholder="z.B. 5W-30 VW 504.00 / 4,3 L"></div>
@@ -459,7 +504,7 @@
     <h3 id="modalServiceTitle">Kundendienst erfassen</h3>
     <div class="form-row">
       <div class="form-group"><label>Datum</label><input type="date" id="sDate" onchange="window.fixYear(this)"></div>
-      <div class="form-group"><label>Kilometerstand</label><input type="number" id="sMileage" placeholder="z.B. 87500"></div>
+      <div class="form-group"><label>Kilometerstand</label><input type="text" inputmode="numeric" id="sMileage" placeholder="z.B. 87.500"></div>
     </div>
     <div class="form-group"><label>Werkstatt</label><input type="text" id="sWorkshop" placeholder="z.B. Autohaus Müller"></div>
     <div class="form-group"><label>Was wurde gemacht</label><textarea id="sDesc" rows="5" placeholder="z.B. Inspektion 60.000 km, Ölwechsel, Bremsen geprüft..."></textarea></div>
@@ -467,6 +512,117 @@
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalService')">Abbrechen</button>
       <button class="btn btn-primary" onclick="window.saveService()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Zubehör -->
+<div class="modal-overlay" id="modalAccessory">
+  <div class="modal">
+    <h3 id="modalAccessoryTitle">Zubehör erfassen</h3>
+    <div class="form-group"><label>Zubehör</label><textarea id="aDesc" rows="4" placeholder="z.B. Dachträger, Anhängerkupplung..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Datum</label><input type="date" id="aDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group"><label>Preis (€) <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="number" step="0.01" id="aCost" placeholder="z.B. 149.90"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalAccessory')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="window.saveAccessory()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tank-Historie -->
+<div class="modal-overlay" id="modalFuelHistory">
+  <div class="modal">
+    <h3>⛽ Tankhistorie</h3>
+    <div id="fuelStats"></div>
+    <div class="section-header" style="margin-bottom:10px">
+      <h3 style="font-size:.9rem">Betankungen</h3>
+      <button class="btn btn-primary btn-sm" onclick="window.openFuelingModal()">+ Betankung</button>
+    </div>
+    <div id="fuelList"></div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalFuelHistory')">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Betankung -->
+<div class="modal-overlay" id="modalFueling">
+  <div class="modal">
+    <h3 id="modalFuelingTitle">Betankung erfassen</h3>
+    <div class="form-group">
+      <label>Art der Betankung</label>
+      <select id="fIsFull" onchange="window.toggleFuelingFields()">
+        <option value="true">⛽ Voll-Betankung (mit Verbrauchsberechnung)</option>
+        <option value="false">🔹 Teil-Betankung (nur Menge & Kosten)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Datum</label><input type="date" id="fDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group" id="fMileageGroup"><label>Kilometerstand</label><input type="text" inputmode="numeric" id="fMileage" placeholder="z.B. 87.500"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Tankmenge (Liter)</label><input type="number" step="0.01" id="fLiters" placeholder="z.B. 42.50" oninput="window.updateFuelPrice()"></div>
+      <div class="form-group"><label>Gesamtpreis (€)</label><input type="number" step="0.01" id="fCost" placeholder="z.B. 75.50" oninput="window.updateFuelPrice()"></div>
+    </div>
+    <div style="background:#f5f5f5;padding:8px 12px;border-radius:8px;font-size:.85rem;color:#666;margin-bottom:8px">
+      <span id="fComputedPrice">Literpreis: –</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalFueling')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="window.saveFueling()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Lade-Historie -->
+<div class="modal-overlay" id="modalChargeHistory">
+  <div class="modal">
+    <h3>🔌 Ladehistorie</h3>
+    <div class="price-edit-row">
+      <label>Heim-Preis (€/kWh):</label>
+      <input type="text" inputmode="decimal" id="kwhPriceInput" onblur="window.saveKwhPrice()" onkeydown="if(event.key==='Enter')this.blur()">
+    </div>
+    <div id="chargeStats"></div>
+    <div class="section-header" style="margin-bottom:10px">
+      <h3 style="font-size:.9rem">Ladungen</h3>
+      <button class="btn btn-primary btn-sm" onclick="window.openChargeModal()">+ Ladung</button>
+    </div>
+    <div id="chargeList"></div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalChargeHistory')">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ladung -->
+<div class="modal-overlay" id="modalCharge">
+  <div class="modal">
+    <h3 id="modalChargeTitle">Ladung erfassen</h3>
+    <div class="form-group">
+      <label>Art der Ladung</label>
+      <select id="cKind" onchange="window.toggleChargeFields()">
+        <option value="home">🏠 Heimladung (monatlich)</option>
+        <option value="public">🔌 Öffentliche Ladung (einzeln)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group" id="cMonthGroup"><label>Monat</label><input type="month" id="cMonth"></div>
+      <div class="form-group" id="cDateGroup" style="display:none"><label>Datum</label><input type="date" id="cDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group" id="cMileageGroup"><label>Kilometerstand <span style="font-weight:400;color:#aaa" id="cMileageHint">(am Monatsende)</span></label><input type="text" inputmode="numeric" id="cMileage" placeholder="z.B. 12.500"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>kWh</label><input type="number" step="0.01" id="cKwh" placeholder="z.B. 320" oninput="window.updateChargePreview()"></div>
+      <div class="form-group" id="cCostGroup"><label>Gesamtpreis (€)</label><input type="number" step="0.01" id="cCost" placeholder="z.B. 24.50" oninput="window.updateChargePreview()"></div>
+    </div>
+    <div style="background:#f5f5f5;padding:8px 12px;border-radius:8px;font-size:.85rem;color:#666;margin-bottom:8px">
+      <span id="cComputedPreview">–</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalCharge')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="window.saveCharge()">Speichern</button>
     </div>
   </div>
 </div>
@@ -516,14 +672,24 @@
   const recordsCol  = collection(db, 'maintenanceRecords');
   const repairsCol  = collection(db, 'repairs');
   const servicesCol = collection(db, 'services');
+  const fuelingsCol = collection(db, 'fuelings');
+  const chargesCol     = collection(db, 'charges');
+  const accessoriesCol = collection(db, 'accessories');
 
   // ── State ───────────────────────────────────────────────────────────────────
-  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [];
+  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [], fuelings = [], charges = [], accessories = [];
   let currentVehicleId = null, activeTab = 'wartungen';
   let appReady = false, typesSeeded = false;
   const collectionsReady = new Set();
-  let editingRecordId = null, editingRepairId = null, editingTypeId = null, editingServiceId = null;
+  let editingRecordId = null, editingRepairId = null, editingTypeId = null, editingServiceId = null, editingFuelingId = null, editingChargeId = null, editingAccessoryId = null;
   let sohHistoryDraft = [];
+  const DEFAULT_KWH_PRICE_FALLBACK = 0.30;
+  function lastKwhPrice() {
+    const stored = localStorage.getItem('lastKwhPrice');
+    const p = stored ? parseFloat(stored) : NaN;
+    return (p > 0) ? p : DEFAULT_KWH_PRICE_FALLBACK;
+  }
+  function fmtKwhPriceInput(p) { return Number(p).toFixed(3).replace('.', ','); }
 
   const DEFAULT_TYPES = [
     { id:'exhaust',       name:'Auspuff',                icon:'💨' },
@@ -615,11 +781,28 @@
       services = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       markReady('services');
     }, handleFbError);
+
+    onSnapshot(fuelingsCol, snap => {
+      fuelings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      markReady('fuelings');
+      if (document.getElementById('modalFuelHistory').classList.contains('active')) renderFuelHistory();
+    }, handleFbError);
+
+    onSnapshot(chargesCol, snap => {
+      charges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      markReady('charges');
+      if (document.getElementById('modalChargeHistory').classList.contains('active')) renderChargeHistory();
+    }, handleFbError);
+
+    onSnapshot(accessoriesCol, snap => {
+      accessories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      markReady('accessories');
+    }, handleFbError);
   }
 
   function markReady(name) {
     collectionsReady.add(name);
-    if (collectionsReady.size >= 5 && !appReady) {
+    if (collectionsReady.size >= 8 && !appReady) {
       appReady = true;
       showScreen('app');
     }
@@ -649,6 +832,7 @@
       renderDetail();
       if (activeTab === 'reparaturen')   renderRepairs();
       if (activeTab === 'kundendienste') renderServices();
+      if (activeTab === 'zubehoer')      renderAccessories();
     } else {
       renderDashboard();
     }
@@ -656,7 +840,33 @@
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function fmtKm(km) { return km != null ? Number(km).toLocaleString('de-DE') + ' km' : '–'; }
+  function parseKm(s) {
+    if (s == null) return null;
+    const cleaned = String(s).replace(/[.\s]/g, '');
+    if (!cleaned) return null;
+    const n = parseInt(cleaned, 10);
+    return isNaN(n) ? null : n;
+  }
   function fmtEur(c)  { return c != null ? Number(c).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €' : '–'; }
+  function fmtLiters(l) { return l != null ? Number(l).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' L' : '–'; }
+  function fmtPpl(p) { return p != null ? Number(p).toLocaleString('de-DE',{minimumFractionDigits:3,maximumFractionDigits:3}) + ' €/L' : '–'; }
+  function fmtCons(c) { return c != null ? Number(c).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' l/100 km' : '–'; }
+  function isFuelDriven(d) { return d === 'Benziner' || d === 'Diesel' || d === 'Hybrid'; }
+  function isElectric(d) { return d === 'Elektro' || d === 'Hybrid'; }
+  function fmtKwh(k) { return k != null ? Number(k).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' kWh' : '–'; }
+  function fmtPpk(p) { return p != null ? Number(p).toLocaleString('de-DE',{minimumFractionDigits:3,maximumFractionDigits:3}) + ' €/kWh' : '–'; }
+  function fmtElCons(c) { return c != null ? Number(c).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' kWh/100 km' : '–'; }
+  function lastDayOfMonth(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m, 0);
+    return `${y}-${String(m).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function fmtMonth(ym) {
+    if (!ym) return '–';
+    const [y, m] = ym.split('-');
+    const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    return `${months[parseInt(m)-1]} ${y}`;
+  }
   function drivetrainLabel(d) { return {Benziner:'⛽ Benziner',Diesel:'🛢️ Diesel',Elektro:'⚡ Elektro',Hybrid:'🔋 Hybrid'}[d] || ''; }
   function fmtDate(s) { if (!s) return '–'; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}`; }
   function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -732,7 +942,7 @@
           <div class="vehicle-title">🚗 ${escHtml(v.type)}</div>
           <div class="vehicle-plate">${escHtml(v.plate)}</div>
         </div>
-        <div class="vehicle-meta">👤 ${escHtml(v.user)}${v.drivetrain?' &nbsp;·&nbsp; '+drivetrainLabel(v.drivetrain):''} &nbsp;·&nbsp; 📍 ${fmtKm(v.mileage)} &nbsp;·&nbsp; Stand: ${fmtDate(v.mileageDate||todayStr())}</div>
+        <div class="vehicle-meta">👤 ${escHtml(v.user)}${v.drivetrain?' &nbsp;·&nbsp; '+drivetrainLabel(v.drivetrain):''} &nbsp;·&nbsp; 📍 ${fmtKm(v.mileage)} &nbsp;·&nbsp; Stand: ${fmtDate(v.mileageDate||todayStr())}${isFuelDriven(v.drivetrain) && fuelStats(v.id).avgConsumption != null ? ' &nbsp;·&nbsp; ⛽ Ø '+fmtCons(fuelStats(v.id).avgConsumption) : ''}${isElectric(v.drivetrain) && chargeStats(v.id).avgConsumption != null ? ' &nbsp;·&nbsp; 🔌 Ø '+fmtElCons(chargeStats(v.id).avgConsumption) : ''}</div>
         <div class="maintenance-badges">${summary}</div>
       </div>`;
     }).join('');
@@ -756,6 +966,8 @@
     document.getElementById('detailTitle').textContent = `${v.type} · ${v.plate}`;
     document.getElementById('detailMeta').textContent  = `👤 ${v.user}${v.drivetrain ? ' · ' + drivetrainLabel(v.drivetrain) : ''}`;
     document.getElementById('detailMileage').textContent = fmtKm(v.mileage);
+    document.getElementById('btnFuel').style.display   = isFuelDriven(v.drivetrain) ? '' : 'none';
+    document.getElementById('btnCharge').style.display = isElectric(v.drivetrain)   ? '' : 'none';
 
     const typesWithRecords = maintenanceTypes
       .filter(t => maintenanceRecords.some(r=>r.vehicleId===v.id&&r.typeId===t.id))
@@ -841,11 +1053,14 @@
     document.getElementById('tabContentWartungen').style.display     = tab==='wartungen'     ? '' : 'none';
     document.getElementById('tabContentReparaturen').style.display   = tab==='reparaturen'   ? '' : 'none';
     document.getElementById('tabContentKundendienste').style.display = tab==='kundendienste' ? '' : 'none';
+    document.getElementById('tabContentZubehoer').style.display      = tab==='zubehoer'      ? '' : 'none';
     document.getElementById('tabWartungen').classList.toggle('active',     tab==='wartungen');
     document.getElementById('tabReparaturen').classList.toggle('active',   tab==='reparaturen');
     document.getElementById('tabKundendienste').classList.toggle('active', tab==='kundendienste');
+    document.getElementById('tabZubehoer').classList.toggle('active',      tab==='zubehoer');
     if (tab==='reparaturen')   renderRepairs();
     if (tab==='kundendienste') renderServices();
+    if (tab==='zubehoer')      renderAccessories();
   }
 
   // ── Modals ───────────────────────────────────────────────────────────────────
@@ -868,7 +1083,7 @@
 
   async function saveVehicle() {
     const type=document.getElementById('vType').value.trim(), plate=document.getElementById('vPlate').value.trim();
-    const user=document.getElementById('vUser').value.trim(), mileage=parseInt(document.getElementById('vMileage').value);
+    const user=document.getElementById('vUser').value.trim(), mileage=parseKm(document.getElementById('vMileage').value);
     const drivetrain=document.getElementById('vDrivetrain').value || null;
     if (!type||!plate) return alert('Bitte Fahrzeugtyp und Kennzeichen eingeben.');
     if (currentVehicleId) {
@@ -886,6 +1101,9 @@
     maintenanceRecords.filter(r=>r.vehicleId===currentVehicleId).forEach(r=>batch.delete(doc(db,'maintenanceRecords',r.id)));
     repairs.filter(r=>r.vehicleId===currentVehicleId).forEach(r=>batch.delete(doc(db,'repairs',r.id)));
     services.filter(s=>s.vehicleId===currentVehicleId).forEach(s=>batch.delete(doc(db,'services',s.id)));
+    fuelings.filter(f=>f.vehicleId===currentVehicleId).forEach(f=>batch.delete(doc(db,'fuelings',f.id)));
+    charges.filter(c=>c.vehicleId===currentVehicleId).forEach(c=>batch.delete(doc(db,'charges',c.id)));
+    accessories.filter(a=>a.vehicleId===currentVehicleId).forEach(a=>batch.delete(doc(db,'accessories',a.id)));
     await batch.commit();
     currentVehicleId = null;
   }
@@ -899,7 +1117,7 @@
   }
 
   async function saveMileage() {
-    const mileage=parseInt(document.getElementById('newMileage').value), date=document.getElementById('newMileageDate').value;
+    const mileage=parseKm(document.getElementById('newMileage').value), date=document.getElementById('newMileageDate').value;
     if (!mileage) return alert('Bitte Kilometerstand eingeben.');
     await updateDoc(doc(db,'vehicles',currentVehicleId), {mileage,mileageDate:date});
     closeModal('modalMileage');
@@ -940,7 +1158,7 @@
 
   async function saveMaintenance() {
     const typeId=document.getElementById('mType').value, date=document.getElementById('mDate').value;
-    const mileage=parseInt(document.getElementById('mMileage').value);
+    const mileage=parseKm(document.getElementById('mMileage').value);
     const intervalKm=document.getElementById('mIntervalKm').value ? parseInt(document.getElementById('mIntervalKm').value) : null;
     const intervalMonths=document.getElementById('mIntervalMonths').value ? parseInt(document.getElementById('mIntervalMonths').value) : null;
     const comment=document.getElementById('mComment').value.trim() || null;
@@ -972,7 +1190,7 @@
 
   async function saveRepair() {
     const description=document.getElementById('rDesc').value.trim(), date=document.getElementById('rDate').value;
-    const mileage=parseInt(document.getElementById('rMileage').value);
+    const mileage=parseKm(document.getElementById('rMileage').value);
     const workshop=document.getElementById('rWorkshop').value.trim() || null;
     const cost=document.getElementById('rCost').value ? parseFloat(document.getElementById('rCost').value) : null;
     if (!description) return alert('Bitte eine Beschreibung eingeben.');
@@ -1023,7 +1241,7 @@
 
   async function saveService() {
     const date=document.getElementById('sDate').value;
-    const mileage=document.getElementById('sMileage').value ? parseInt(document.getElementById('sMileage').value) : null;
+    const mileage=parseKm(document.getElementById('sMileage').value);
     const workshop=document.getElementById('sWorkshop').value.trim();
     const description=document.getElementById('sDesc').value.trim();
     const cost=document.getElementById('sCost').value ? parseFloat(document.getElementById('sCost').value) : null;
@@ -1040,6 +1258,402 @@
     await deleteDoc(doc(db,'services',id));
   }
 
+  // Zubehör
+  function renderAccessories() {
+    const filtered = accessories.filter(a => a.vehicleId === currentVehicleId).sort((a,b) => b.date.localeCompare(a.date));
+    const sum = filtered.reduce((s,a) => s + (a.cost || 0), 0);
+    const summary = document.getElementById('accessorySummary');
+    const list    = document.getElementById('accessoryList');
+    summary.innerHTML = filtered.length > 0 && sum > 0
+      ? `<div class="accessory-summary">🛍️ Gesamt: ${fmtEur(sum)} (${filtered.length} Eintr${filtered.length===1?'ag':'äge'})</div>`
+      : '';
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍️</div>Noch kein Zubehör erfasst.</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(a => `<div class="accessory-card">
+      <div class="accessory-card-top">
+        <span class="accessory-desc">${escHtml(a.description)}</span>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          ${a.cost != null ? `<span class="accessory-cost">${fmtEur(a.cost)}</span>` : ''}
+          <button class="btn-icon" onclick="window.openAccessoryModal('${a.id}')">✏️</button>
+          <button class="btn-icon" onclick="window.deleteAccessory('${a.id}')">🗑️</button>
+        </div>
+      </div>
+      <div class="accessory-meta">📅 ${fmtDate(a.date)}</div>
+    </div>`).join('');
+  }
+
+  function openAccessoryModal(id=null) {
+    editingAccessoryId = id;
+    document.getElementById('modalAccessoryTitle').textContent = id ? 'Zubehör bearbeiten' : 'Zubehör erfassen';
+    const a = id ? accessories.find(x => x.id === id) : null;
+    document.getElementById('aDesc').value = a?.description || '';
+    document.getElementById('aDate').value = a?.date        || todayStr();
+    document.getElementById('aCost').value = a?.cost        ?? '';
+    openModal('modalAccessory');
+  }
+
+  async function saveAccessory() {
+    const description = document.getElementById('aDesc').value.trim();
+    const date        = document.getElementById('aDate').value;
+    const cost        = document.getElementById('aCost').value ? parseFloat(document.getElementById('aCost').value) : null;
+    if (!description) return alert('Bitte Zubehör beschreiben.');
+    if (!date) return alert('Bitte Datum eingeben.');
+    const data = {vehicleId: currentVehicleId, description, date, cost};
+    if (editingAccessoryId) await updateDoc(doc(db,'accessories',editingAccessoryId), data);
+    else                    await addDoc(accessoriesCol, data);
+    editingAccessoryId = null;
+    closeModal('modalAccessory');
+  }
+
+  async function deleteAccessory(id) {
+    if (!confirm('Zubehör löschen?')) return;
+    await deleteDoc(doc(db,'accessories',id));
+  }
+
+  // Tanken
+  function fuelStats(vehicleId) {
+    const list = fuelings.filter(f => f.vehicleId === vehicleId)
+      .sort((a,b) => a.date.localeCompare(b.date));
+    const fulls = list.filter(f => f.isFull && f.mileage != null);
+    let totalKm = 0, totalLiters = 0, totalCost = 0;
+    for (let i = 1; i < fulls.length; i++) {
+      const prev = fulls[i-1], cur = fulls[i];
+      const km = cur.mileage - prev.mileage;
+      if (km <= 0) continue;
+      const between = list.filter(f => f.date > prev.date && f.date <= cur.date);
+      const liters = between.reduce((s,f) => s + (f.liters||0), 0);
+      const cost   = between.reduce((s,f) => s + (f.totalCost||0), 0);
+      totalKm += km; totalLiters += liters; totalCost += cost;
+    }
+    const allCost = list.reduce((s,f) => s + (f.totalCost||0), 0);
+    return {
+      avgConsumption: totalKm > 0 ? totalLiters / totalKm * 100 : null,
+      avgPpl:         totalLiters > 0 ? totalCost / totalLiters : null,
+      totalCost:      allCost,
+      count:          list.length,
+      entries:        list,
+    };
+  }
+
+  function entryConsumption(vehicleId, fuelingId) {
+    const list = fuelings.filter(f => f.vehicleId === vehicleId).sort((a,b) => a.date.localeCompare(b.date));
+    const cur  = list.find(f => f.id === fuelingId);
+    if (!cur || !cur.isFull || cur.mileage == null) return null;
+    const fulls = list.filter(f => f.isFull && f.mileage != null);
+    const idx = fulls.findIndex(f => f.id === fuelingId);
+    if (idx <= 0) return null;
+    const prev = fulls[idx-1];
+    const km = cur.mileage - prev.mileage;
+    if (km <= 0) return null;
+    const liters = list.filter(f => f.date > prev.date && f.date <= cur.date).reduce((s,f) => s + (f.liters||0), 0);
+    return { km, liters, consumption: liters / km * 100 };
+  }
+
+  function openFuelHistoryModal() {
+    renderFuelHistory();
+    openModal('modalFuelHistory');
+  }
+
+  function renderFuelHistory() {
+    const stats = fuelStats(currentVehicleId);
+    const sorted = [...stats.entries].sort((a,b) => b.date.localeCompare(a.date));
+
+    const statsHtml = stats.avgConsumption != null
+      ? `<div class="fuel-stats-card">
+           <div class="fuel-stats-row"><span>Ø Verbrauch</span><span class="fuel-stats-big">${fmtCons(stats.avgConsumption)}</span></div>
+           <div class="fuel-stats-row"><span>Ø Literpreis</span><span>${fmtPpl(stats.avgPpl)}</span></div>
+           <div class="fuel-stats-row"><span>Gesamtkosten</span><span>${fmtEur(stats.totalCost)}</span></div>
+         </div>`
+      : `<div class="fuel-stats-card" style="background:#f5f5f5;color:#888;font-size:.85rem;text-align:center">
+           Mind. 2 Voll-Betankungen erforderlich für Verbrauchsberechnung.
+           ${stats.count > 0 ? `<br>Bisherige Gesamtkosten: ${fmtEur(stats.totalCost)}` : ''}
+         </div>`;
+
+    const listHtml = sorted.length === 0
+      ? `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">⛽</div>Noch keine Betankung erfasst.</div>`
+      : sorted.map(f => {
+          const ec  = entryConsumption(currentVehicleId, f.id);
+          const ppl = f.liters > 0 ? f.totalCost / f.liters : null;
+          const consPart = ec
+            ? `<span class="fc-consumption">${fmtCons(ec.consumption)} · ${fmtKm(ec.km)}</span>`
+            : '';
+          return `<div class="fuel-card${f.isFull?'':' partial'}">
+            <div class="fuel-top">
+              <span class="fuel-title">${f.isFull?'⛽ Voll':'🔹 Teil'} · ${fmtDate(f.date)}${f.isFull && f.mileage != null ? ' · '+fmtKm(f.mileage) : ''}</span>
+              <div style="display:flex;gap:2px">
+                <button class="btn-icon" onclick="window.openFuelingModal('${f.id}')">✏️</button>
+                <button class="btn-icon" onclick="window.deleteFueling('${f.id}')">🗑️</button>
+              </div>
+            </div>
+            <div class="fuel-details">
+              <span>${fmtLiters(f.liters)}</span>
+              <span>${fmtEur(f.totalCost)}</span>
+              <span>${fmtPpl(ppl)}</span>
+              ${consPart}
+            </div>
+          </div>`;
+        }).join('');
+
+    document.getElementById('fuelStats').innerHTML = statsHtml;
+    document.getElementById('fuelList').innerHTML  = listHtml;
+  }
+
+  function openFuelingModal(id=null) {
+    editingFuelingId = id;
+    const f = id ? fuelings.find(x => x.id === id) : null;
+    const v = vehicles.find(v => v.id === currentVehicleId);
+    document.getElementById('modalFuelingTitle').textContent = id ? 'Betankung bearbeiten' : 'Betankung erfassen';
+    document.getElementById('fIsFull').value  = f ? String(!!f.isFull) : 'true';
+    document.getElementById('fDate').value    = f?.date || todayStr();
+    document.getElementById('fMileage').value = f?.mileage ?? v?.mileage ?? '';
+    document.getElementById('fLiters').value  = f?.liters ?? '';
+    document.getElementById('fCost').value    = f?.totalCost ?? '';
+    toggleFuelingFields();
+    updateFuelPrice();
+    openModal('modalFueling');
+  }
+
+  function toggleFuelingFields() {
+    const isFull = document.getElementById('fIsFull').value === 'true';
+    document.getElementById('fMileageGroup').style.display = isFull ? '' : 'none';
+  }
+
+  function updateFuelPrice() {
+    const liters = parseFloat(document.getElementById('fLiters').value);
+    const cost   = parseFloat(document.getElementById('fCost').value);
+    const el     = document.getElementById('fComputedPrice');
+    if (liters > 0 && cost > 0) el.textContent = `Literpreis: ${fmtPpl(cost/liters)}`;
+    else                         el.textContent = 'Literpreis: –';
+  }
+
+  async function saveFueling() {
+    const isFull    = document.getElementById('fIsFull').value === 'true';
+    const date      = document.getElementById('fDate').value;
+    const mileage   = isFull ? parseKm(document.getElementById('fMileage').value) : null;
+    const liters    = parseFloat(document.getElementById('fLiters').value);
+    const totalCost = parseFloat(document.getElementById('fCost').value);
+    if (!date) return alert('Bitte Datum eingeben.');
+    if (!(liters > 0)) return alert('Bitte Tankmenge eingeben.');
+    if (!(totalCost > 0)) return alert('Bitte Gesamtpreis eingeben.');
+    if (isFull && !(mileage > 0)) return alert('Bitte Kilometerstand bei Voll-Betankung eingeben.');
+
+    const data = {vehicleId:currentVehicleId, date, isFull, mileage, liters, totalCost};
+    if (editingFuelingId) await updateDoc(doc(db,'fuelings',editingFuelingId), data);
+    else                  await addDoc(fuelingsCol, data);
+
+    if (isFull && mileage) {
+      const v = vehicles.find(v => v.id === currentVehicleId);
+      if (v && (v.mileage == null || mileage > v.mileage)) {
+        await updateDoc(doc(db,'vehicles',currentVehicleId), {mileage, mileageDate: date});
+      }
+    }
+    editingFuelingId = null;
+    closeModal('modalFueling');
+  }
+
+  async function deleteFueling(id) {
+    if (!confirm('Betankung löschen?')) return;
+    await deleteDoc(doc(db,'fuelings',id));
+  }
+
+  // Laden
+  function chargeEffectiveDate(c) {
+    return c.kind === 'home' ? lastDayOfMonth(c.month) : c.date;
+  }
+
+  function chargeCost(c, kwhPrice) {
+    if (c.kind === 'home') return (c.kwh || 0) * kwhPrice;
+    return c.totalCost || 0;
+  }
+
+  function chargeStats(vehicleId) {
+    const v = vehicles.find(v => v.id === vehicleId);
+    const kwhPrice = v?.kwhPrice ?? lastKwhPrice();
+    const list = charges.filter(c => c.vehicleId === vehicleId)
+      .map(c => ({...c, _eff: chargeEffectiveDate(c)}))
+      .sort((a,b) => a._eff.localeCompare(b._eff));
+    const withKm = list.filter(c => c.mileage != null);
+    let totalKm = 0, totalKwh = 0;
+    for (let i = 1; i < withKm.length; i++) {
+      const prev = withKm[i-1], cur = withKm[i];
+      const km = cur.mileage - prev.mileage;
+      if (km <= 0) continue;
+      const between = list.filter(c => c._eff > prev._eff && c._eff <= cur._eff);
+      const kwh = between.reduce((s,c) => s + (c.kwh||0), 0);
+      totalKm += km; totalKwh += kwh;
+    }
+    const totalCost = list.reduce((s,c) => s + chargeCost(c, kwhPrice), 0);
+    const totalKwhAll = list.reduce((s,c) => s + (c.kwh||0), 0);
+    return {
+      avgConsumption: totalKm > 0 ? totalKwh / totalKm * 100 : null,
+      totalKwh:       totalKwhAll,
+      totalCost,
+      kwhPrice,
+      count:          list.length,
+      entries:        list,
+    };
+  }
+
+  function entryChargeConsumption(vehicleId, chargeId) {
+    const list = charges.filter(c => c.vehicleId === vehicleId)
+      .map(c => ({...c, _eff: chargeEffectiveDate(c)}))
+      .sort((a,b) => a._eff.localeCompare(b._eff));
+    const cur = list.find(c => c.id === chargeId);
+    if (!cur || cur.mileage == null) return null;
+    const withKm = list.filter(c => c.mileage != null);
+    const idx = withKm.findIndex(c => c.id === chargeId);
+    if (idx <= 0) return null;
+    const prev = withKm[idx-1];
+    const km = cur.mileage - prev.mileage;
+    if (km <= 0) return null;
+    const kwh = list.filter(c => c._eff > prev._eff && c._eff <= cur._eff).reduce((s,c) => s + (c.kwh||0), 0);
+    return { km, kwh, consumption: kwh / km * 100 };
+  }
+
+  function openChargeHistoryModal() {
+    const v = vehicles.find(v => v.id === currentVehicleId);
+    document.getElementById('kwhPriceInput').value = fmtKwhPriceInput(v?.kwhPrice ?? lastKwhPrice());
+    renderChargeHistory();
+    openModal('modalChargeHistory');
+  }
+
+  async function saveKwhPrice() {
+    const raw = document.getElementById('kwhPriceInput').value.replace(',', '.');
+    const p = parseFloat(raw);
+    if (!(p > 0)) {
+      document.getElementById('kwhPriceInput').value = fmtKwhPriceInput(vehicles.find(v => v.id === currentVehicleId)?.kwhPrice ?? lastKwhPrice());
+      return;
+    }
+    document.getElementById('kwhPriceInput').value = fmtKwhPriceInput(p);
+    localStorage.setItem('lastKwhPrice', String(p));
+    await updateDoc(doc(db,'vehicles',currentVehicleId), {kwhPrice: p});
+  }
+
+  function renderChargeHistory() {
+    const stats  = chargeStats(currentVehicleId);
+    const sorted = [...stats.entries].sort((a,b) => b._eff.localeCompare(a._eff));
+
+    const statsHtml = stats.avgConsumption != null
+      ? `<div class="charge-stats-card">
+           <div class="fuel-stats-row"><span>Ø Verbrauch</span><span class="fuel-stats-big">${fmtElCons(stats.avgConsumption)}</span></div>
+           <div class="fuel-stats-row"><span>kWh gesamt</span><span>${fmtKwh(stats.totalKwh)}</span></div>
+           <div class="fuel-stats-row"><span>Gesamtkosten</span><span>${fmtEur(stats.totalCost)}</span></div>
+         </div>`
+      : `<div class="charge-stats-card" style="background:#f5f5f5;color:#888;font-size:.85rem;text-align:center">
+           Mind. 2 Einträge mit Kilometerstand erforderlich für Verbrauchsberechnung.
+           ${stats.count > 0 ? `<br>kWh bisher: ${fmtKwh(stats.totalKwh)} · Gesamtkosten: ${fmtEur(stats.totalCost)}` : ''}
+         </div>`;
+
+    const listHtml = sorted.length === 0
+      ? `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🔌</div>Noch keine Ladung erfasst.</div>`
+      : sorted.map(c => {
+          const ec = entryChargeConsumption(currentVehicleId, c.id);
+          const cost = chargeCost(c, stats.kwhPrice);
+          const ppl = c.kind === 'public' && c.kwh > 0 ? c.totalCost / c.kwh : null;
+          const head = c.kind === 'home'
+            ? `🏠 ${fmtMonth(c.month)}${c.mileage != null ? ' · '+fmtKm(c.mileage) : ''}`
+            : `🔌 ${fmtDate(c.date)}${c.mileage != null ? ' · '+fmtKm(c.mileage) : ''}`;
+          return `<div class="charge-card${c.kind==='public'?' public':''}">
+            <div class="fuel-top">
+              <span class="fuel-title">${head}</span>
+              <div style="display:flex;gap:2px">
+                <button class="btn-icon" onclick="window.openChargeModal('${c.id}')">✏️</button>
+                <button class="btn-icon" onclick="window.deleteCharge('${c.id}')">🗑️</button>
+              </div>
+            </div>
+            <div class="fuel-details">
+              <span>${fmtKwh(c.kwh)}</span>
+              <span>${fmtEur(cost)}</span>
+              <span>${ppl != null ? fmtPpk(ppl) : fmtPpk(stats.kwhPrice)}</span>
+              ${ec ? `<span class="fc-consumption">${fmtElCons(ec.consumption)} · ${fmtKm(ec.km)}</span>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+
+    document.getElementById('chargeStats').innerHTML = statsHtml;
+    document.getElementById('chargeList').innerHTML  = listHtml;
+  }
+
+  function openChargeModal(id=null) {
+    editingChargeId = id;
+    const c = id ? charges.find(x => x.id === id) : null;
+    const v = vehicles.find(v => v.id === currentVehicleId);
+    document.getElementById('modalChargeTitle').textContent = id ? 'Ladung bearbeiten' : 'Ladung erfassen';
+    document.getElementById('cKind').value    = c?.kind || 'home';
+    document.getElementById('cMonth').value   = c?.month || todayStr().slice(0,7);
+    document.getElementById('cDate').value    = c?.date || todayStr();
+    document.getElementById('cMileage').value = c?.mileage ?? (c?.kind === 'home' ? v?.mileage : '') ?? '';
+    document.getElementById('cKwh').value     = c?.kwh ?? '';
+    document.getElementById('cCost').value    = c?.totalCost ?? '';
+    toggleChargeFields();
+    updateChargePreview();
+    openModal('modalCharge');
+  }
+
+  function toggleChargeFields() {
+    const isHome = document.getElementById('cKind').value === 'home';
+    document.getElementById('cMonthGroup').style.display   = isHome ? '' : 'none';
+    document.getElementById('cDateGroup').style.display    = isHome ? 'none' : '';
+    document.getElementById('cCostGroup').style.display    = isHome ? 'none' : '';
+    document.getElementById('cMileageHint').textContent    = isHome ? '(am Monatsende)' : '(optional)';
+    updateChargePreview();
+  }
+
+  function updateChargePreview() {
+    const isHome = document.getElementById('cKind').value === 'home';
+    const kwh    = parseFloat(document.getElementById('cKwh').value);
+    const v      = vehicles.find(v => v.id === currentVehicleId);
+    const price  = v?.kwhPrice ?? lastKwhPrice();
+    const el     = document.getElementById('cComputedPreview');
+    if (isHome) {
+      el.textContent = kwh > 0 ? `Kosten: ${fmtEur(kwh * price)} (bei ${fmtPpk(price)})` : `Kosten werden mit ${fmtPpk(price)} berechnet.`;
+    } else {
+      const cost = parseFloat(document.getElementById('cCost').value);
+      el.textContent = (kwh > 0 && cost > 0) ? `€/kWh: ${fmtPpk(cost/kwh)}` : '€/kWh: –';
+    }
+  }
+
+  async function saveCharge() {
+    const kind    = document.getElementById('cKind').value;
+    const kwh     = parseFloat(document.getElementById('cKwh').value);
+    const mileage = parseKm(document.getElementById('cMileage').value);
+    if (!(kwh > 0)) return alert('Bitte kWh eingeben.');
+
+    let data;
+    if (kind === 'home') {
+      const month = document.getElementById('cMonth').value;
+      if (!month) return alert('Bitte Monat wählen.');
+      if (!(mileage > 0)) return alert('Bitte Kilometerstand am Monatsende eingeben.');
+      data = {vehicleId:currentVehicleId, kind:'home', month, kwh, mileage, date:null, totalCost:null};
+    } else {
+      const date = document.getElementById('cDate').value;
+      const totalCost = parseFloat(document.getElementById('cCost').value);
+      if (!date) return alert('Bitte Datum eingeben.');
+      if (!(totalCost > 0)) return alert('Bitte Gesamtpreis eingeben.');
+      data = {vehicleId:currentVehicleId, kind:'public', date, kwh, mileage, totalCost, month:null};
+    }
+
+    if (editingChargeId) await updateDoc(doc(db,'charges',editingChargeId), data);
+    else                 await addDoc(chargesCol, data);
+
+    if (mileage) {
+      const v = vehicles.find(v => v.id === currentVehicleId);
+      const refDate = kind === 'home' ? lastDayOfMonth(data.month) : data.date;
+      if (v && (v.mileage == null || mileage > v.mileage)) {
+        await updateDoc(doc(db,'vehicles',currentVehicleId), {mileage, mileageDate: refDate});
+      }
+    }
+    editingChargeId = null;
+    closeModal('modalCharge');
+  }
+
+  async function deleteCharge(id) {
+    if (!confirm('Ladung löschen?')) return;
+    await deleteDoc(doc(db,'charges',id));
+  }
+
   // Stammdaten
   function openStammdatenModal() {
     const v = vehicles.find(v=>v.id===currentVehicleId); if (!v) return;
@@ -1053,9 +1667,10 @@
     document.getElementById('sdTireSummer').value  = v.tireSummer    || '';
     document.getElementById('sdTireWinter').value  = v.tireWinter    || '';
     document.getElementById('sdBatCap').value         = v.batteryCap     || '';
-    document.getElementById('sdPurchaseDate').value   = v.purchaseDate   || '';
-    document.getElementById('sdPurchasePrice').value  = v.purchasePrice  ?? '';
-    document.getElementById('sdPurchaseSource').value = v.purchaseSource || '';
+    document.getElementById('sdPurchaseDate').value    = v.purchaseDate    || '';
+    document.getElementById('sdPurchasePrice').value   = v.purchasePrice   ?? '';
+    document.getElementById('sdPurchaseMileage').value = v.purchaseMileage ?? '';
+    document.getElementById('sdPurchaseSource').value  = v.purchaseSource  || '';
     document.getElementById('sdAccessories').value    = v.accessories    || '';
 
     // SoH-Historie: bevorzugt batterySohHistory, sonst Migration von altem Einzelwert
@@ -1115,6 +1730,7 @@
       batteryCap:        document.getElementById('sdBatCap').value.trim()      || null,
       purchaseDate:      document.getElementById('sdPurchaseDate').value       || null,
       purchasePrice:     document.getElementById('sdPurchasePrice').value ? parseFloat(document.getElementById('sdPurchasePrice').value) : null,
+      purchaseMileage:   parseKm(document.getElementById('sdPurchaseMileage').value),
       purchaseSource:    document.getElementById('sdPurchaseSource').value     || null,
       accessories:       document.getElementById('sdAccessories').value.trim() || null,
       batterySohHistory: sohHistoryDraft.length ? sohHistoryDraft : null,
@@ -1167,6 +1783,13 @@
 
     const vRepairs  = repairs.filter(r=>r.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
     const vServices = services.filter(s=>s.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
+    const vFuelings = fuelings.filter(f=>f.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
+    const fStats    = fuelStats(v.id);
+    const vCharges  = charges.filter(c=>c.vehicleId===v.id)
+                        .map(c=>({...c, _eff: chargeEffectiveDate(c)}))
+                        .sort((a,b)=>b._eff.localeCompare(a._eff));
+    const cStats    = chargeStats(v.id);
+    const vAccessories = accessories.filter(a=>a.vehicleId===v.id).sort((a,b)=>b.date.localeCompare(a.date));
 
     const stammRows = [
       ['Modell',                 v.model],
@@ -1178,6 +1801,7 @@
       ['Kaufdatum',              v.purchaseDate ? fmtDate(v.purchaseDate) : null],
       ['Gekauft von',            v.purchaseSource],
       ['Kaufpreis',              v.purchasePrice != null ? fmtEur(v.purchasePrice) : null],
+      ['Km-Stand bei Kauf',      v.purchaseMileage != null ? fmtKm(v.purchaseMileage) : null],
       ['Zubehör bei Kauf',       v.accessories ? `<span style="white-space:pre-wrap">${escHtml(v.accessories)}</span>` : null],
       ['Öl Norm/Menge',          v.oilSpec],
       ['Reifengröße Sommer',     v.tireSummer],
@@ -1220,6 +1844,35 @@
       <tbody>${vServices.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.mileage!=null?fmtKm(s.mileage):'–'}</td><td>${s.workshop||''}</td><td style="white-space:pre-wrap">${s.description||''}</td><td style="text-align:right">${fmtEur(s.cost)}</td></tr>`).join('')}
       <tr><td colspan="4" style="text-align:right;font-weight:700">Summe:</td><td style="text-align:right;font-weight:700">${fmtEur(kdSum)}</td></tr></tbody></table>` : '';
 
+    const accSum = vAccessories.reduce((sum,a)=>sum+(a.cost||0),0);
+    const zubehoerHtml = vAccessories.length ? `
+      <h2>Zubehör</h2>
+      <table><thead><tr><th>Datum</th><th>Zubehör</th><th style="text-align:right">Preis</th></tr></thead>
+      <tbody>${vAccessories.map(a=>`<tr><td>${fmtDate(a.date)}</td><td style="white-space:pre-wrap">${a.description}</td><td style="text-align:right">${fmtEur(a.cost)}</td></tr>`).join('')}
+      <tr><td colspan="2" style="text-align:right;font-weight:700">Summe:</td><td style="text-align:right;font-weight:700">${fmtEur(accSum)}</td></tr></tbody></table>` : '';
+
+    const fuelHeader = fStats.avgConsumption != null
+      ? `<p style="margin:4px 0 8px;font-size:11px;color:#555">Ø Verbrauch: <strong>${fmtCons(fStats.avgConsumption)}</strong> &nbsp;·&nbsp; Ø Literpreis: <strong>${fmtPpl(fStats.avgPpl)}</strong> &nbsp;·&nbsp; Gesamtkosten: <strong>${fmtEur(fStats.totalCost)}</strong></p>`
+      : '';
+    const tankenHtml = vFuelings.length ? `
+      <h2>Tankungen</h2>
+      ${fuelHeader}
+      <table><thead><tr><th>Datum</th><th>Art</th><th>Kilometerstand</th><th style="text-align:right">Menge</th><th style="text-align:right">€/L</th><th style="text-align:right">Gesamt</th><th style="text-align:right">Verbrauch</th></tr></thead>
+      <tbody>${vFuelings.map(f=>{
+        const ec = entryConsumption(v.id, f.id);
+        const ppl = f.liters > 0 ? f.totalCost / f.liters : null;
+        return `<tr>
+          <td>${fmtDate(f.date)}</td>
+          <td>${f.isFull?'Voll':'Teil'}</td>
+          <td>${f.isFull && f.mileage != null ? fmtKm(f.mileage) : '–'}</td>
+          <td style="text-align:right">${fmtLiters(f.liters)}</td>
+          <td style="text-align:right">${fmtPpl(ppl)}</td>
+          <td style="text-align:right">${fmtEur(f.totalCost)}</td>
+          <td style="text-align:right">${ec ? fmtCons(ec.consumption) : '–'}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>` : '';
+
     const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
       <title>Wartungshistorie – ${v.type} ${v.plate}</title>
       <style>
@@ -1241,6 +1894,31 @@
       ${wartungenHtml || '<p style="color:#aaa">Keine Wartungen erfasst.</p>'}
       ${reparaturenHtml}
       ${kundendiensteHtml}
+      ${zubehoerHtml}
+      ${tankenHtml}
+      ${(() => {
+        if (!vCharges.length) return '';
+        const head = cStats.avgConsumption != null
+          ? `<p style="margin:4px 0 8px;font-size:11px;color:#555">Ø Verbrauch: <strong>${fmtElCons(cStats.avgConsumption)}</strong> &nbsp;·&nbsp; kWh gesamt: <strong>${fmtKwh(cStats.totalKwh)}</strong> &nbsp;·&nbsp; Gesamtkosten: <strong>${fmtEur(cStats.totalCost)}</strong> &nbsp;·&nbsp; Heim-Preis: <strong>${fmtPpk(cStats.kwhPrice)}</strong></p>`
+          : '';
+        const rows = vCharges.map(c => {
+          const ec  = entryChargeConsumption(v.id, c.id);
+          const ppl = c.kind === 'public' && c.kwh > 0 ? c.totalCost / c.kwh : cStats.kwhPrice;
+          const cost = chargeCost(c, cStats.kwhPrice);
+          return `<tr>
+            <td>${c.kind === 'home' ? fmtMonth(c.month) : fmtDate(c.date)}</td>
+            <td>${c.kind === 'home' ? 'Heim' : 'Öffentlich'}</td>
+            <td>${c.mileage != null ? fmtKm(c.mileage) : '–'}</td>
+            <td style="text-align:right">${fmtKwh(c.kwh)}</td>
+            <td style="text-align:right">${fmtPpk(ppl)}</td>
+            <td style="text-align:right">${fmtEur(cost)}</td>
+            <td style="text-align:right">${ec ? fmtElCons(ec.consumption) : '–'}</td>
+          </tr>`;
+        }).join('');
+        return `<h2>Ladungen</h2>${head}
+          <table><thead><tr><th>Datum/Monat</th><th>Art</th><th>Kilometerstand</th><th style="text-align:right">kWh</th><th style="text-align:right">€/kWh</th><th style="text-align:right">Kosten</th><th style="text-align:right">Verbrauch</th></tr></thead>
+          <tbody>${rows}</tbody></table>`;
+      })()}
       <script>window.onload=()=>window.print();<\/script>
     </body></html>`;
 
@@ -1251,7 +1929,7 @@
 
   // ── Export / Import ──────────────────────────────────────────────────────────
   function exportData() {
-    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs, services };
+    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs, services, fuelings, charges, accessories };
     const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     const url  = URL.createObjectURL(blob);
     const a    = Object.assign(document.createElement('a'), {href:url, download:`autowartung_backup_${todayStr()}.json`});
@@ -1268,12 +1946,15 @@
         if (!confirm('Alle aktuellen Daten werden ersetzt. Fortfahren?')) return;
 
         const b1 = writeBatch(db);
-        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs,...services].forEach(x => {
+        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs,...services,...fuelings,...charges,...accessories].forEach(x => {
           const col = vehicles.includes(x)?'vehicles'
                     : maintenanceTypes.includes(x)?'maintenanceTypes'
                     : maintenanceRecords.includes(x)?'maintenanceRecords'
                     : repairs.includes(x)?'repairs'
-                    : 'services';
+                    : services.includes(x)?'services'
+                    : fuelings.includes(x)?'fuelings'
+                    : charges.includes(x)?'charges'
+                    : 'accessories';
           b1.delete(doc(db,col,x.id));
         });
         await b1.commit();
@@ -1285,6 +1966,9 @@
         write('maintenanceRecords',imp.maintenanceRecords);
         write('repairs',           imp.repairs);
         write('services',          imp.services);
+        write('fuelings',          imp.fuelings);
+        write('charges',           imp.charges);
+        write('accessories',       imp.accessories);
         await b2.commit();
         alert('✅ Import erfolgreich!');
       } catch(err) { alert('Fehler: '+err.message); }
@@ -1306,6 +1990,9 @@
     openMaintenanceModal, saveMaintenance, deleteRecord, fillTypeDefaults,
     openRepairModal, saveRepair, deleteRepair,
     openServiceModal, saveService, deleteService,
+    openAccessoryModal, saveAccessory, deleteAccessory,
+    openFuelHistoryModal, openFuelingModal, saveFueling, deleteFueling, toggleFuelingFields, updateFuelPrice,
+    openChargeHistoryModal, openChargeModal, saveCharge, deleteCharge, toggleChargeFields, updateChargePreview, saveKwhPrice,
     openStammdatenModal, saveStammdaten, addSohEntry, removeSohEntry,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
