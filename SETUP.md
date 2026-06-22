@@ -1,6 +1,6 @@
 # Autowartung – Vollständige Einrichtungsdokumentation
 
-Stand: 19. Juni 2026 · App-Cache-Version: `v10`
+Stand: 22. Juni 2026 · App-Cache-Version: `v13`
 
 ---
 
@@ -62,6 +62,7 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
 - 🔌 Laden (nur Elektro/Hybrid)
 - ✏️ Bearbeiten
 - 📋 Stammdaten
+- 📊 Statistik
 - 📄 PDF
 - 🗑️ Löschen
 
@@ -98,13 +99,24 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
 - Ø-Verbrauch (kWh/100 km) ab 2 Einträgen mit Km
 
 ### Stammdaten (Modal)
-Modell, Fahrgestellnummer, Erstzulassung, Farbcode, Schlüssel 2.1/2.2, Kaufdatum, Kaufpreis, **Km bei Kauf**, Gekauft von (Händler/Privat), Zubehör bei Kauf (Freitext), Öl Norm/Menge, Reifengröße Sommer/Winter, Batterie Nettokapazität, **SoH-Historie** (mehrere Messungen mit Datum)
+Modell, Fahrgestellnummer, Erstzulassung, Farbcode, Schlüssel 2.1/2.2, Kaufdatum, Kaufpreis, **Km bei Kauf**, Gekauft von (Händler/Privat), Zubehör bei Kauf (Freitext), Öl Norm/Menge, Reifengröße Sommer/Winter, **Infos / Notizen** (Freitext), Batterie Nettokapazität, **SoH-Historie** (mehrere Messungen mit Datum)
+
+### Statistik (Modal)
+Fahrleistungs-Auswertung, vollständig **automatisch** aus allen vorhandenen km-Einträgen berechnet (Wartungen, Reparaturen, Kundendienste, Tankungen, Ladungen, aktueller Stand, Km bei Kauf). Pro Datum wird der höchste km-Stand genommen, Zwischenwerte werden linear interpoliert.
+
+**Einstellungen (pro Fahrzeug, gespeichert im `vehicles`-Dokument):**
+- **Berechnung ab** – Startdatum der Auswertung (z. B. `15.06.2026`)
+- **Geplante Fahrleistung pro Jahr** – Liste „Jahr → km" (= Fahrleistungsangabe der Versicherung), pro Jahr einstellbar
+
+**Auswertung (live, aktualisiert sich sofort bei Änderung):**
+- **📊 Gesamtkilometer pro Kalenderjahr** – Balkendiagramm; unvollständige Jahre (laufend bzw. ab Startdatum) mit `*` markiert
+- **📅 Versicherungsjahr (ab Startdatum)** – rollende 12-Monats-Periode (z. B. 15.06.2026–14.06.2027) mit: gefahren bisher, Ø pro Monat, Hochrechnung aufs Jahr, Plan-Vergleich (Fortschrittsbalken mit Soll-Marke, grün ≤ Plan / rot > Plan, Klartext „voraussichtlich X km über/unter Plan") sowie einer Liste abgeschlossener Perioden mit Ist vs. Plan
 
 ### PDF-Export
 Komplette Wartungshistorie inkl. Stammdaten, Wartungen, Reparaturen, Kundendienste, Zubehör, Tankungen, Ladungen — eine HTML-Seite, die Druck-Dialog automatisch öffnet (→ als PDF speicherbar).
 
 ### Datensicherung
-- **Export**: JSON-Datei mit allen 8 Collections (Stand 19.06.2026 vollständig)
+- **Export**: JSON-Datei mit allen 8 Collections (Stand 22.06.2026 vollständig; Statistik-Einstellungen sind Felder in `vehicles` und damit enthalten)
 - **Import**: Komplettes Überschreiben der Cloud-Daten
 - **Eingabe-Komfort**: Km-Felder akzeptieren Punkt als Tausender-Trenner (`100.000` = `100000`)
 
@@ -160,15 +172,20 @@ Die App nutzt **8 Top-Level-Collections**. Alle Dokument-IDs werden von Firestor
 ### `vehicles`
 ```
 type, plate, user, drivetrain ('Benziner'|'Diesel'|'Elektro'|'Hybrid'|null),
-mileage (number), mileageDate (YYYY-MM-DD),
+mileage (number|null), mileageDate (YYYY-MM-DD),
 kwhPrice (number, nur Elektro),
 // Stammdaten:
 model, vin, firstReg, colorCode, key21, key22,
 purchaseDate, purchasePrice, purchaseMileage, purchaseSource ('Händler'|'Privat'),
 accessories (string, "Zubehör bei Kauf"),
 oilSpec, tireSummer, tireWinter, batteryCap,
-batterySohHistory: [{value, date}, ...]
+notes (string|null, "Infos / Notizen"),
+batterySohHistory: [{value, date}, ...],
+// Statistik:
+statsStartDate (YYYY-MM-DD|null, Startdatum der Auswertung),
+plannedKm: [{year (number), km (number)}, ...] | null
 ```
+> **Hinweis (km = null):** Ein leerer/`null` Kilometerstand wird in der App als **0 km** behandelt (Auslieferungs-/Neuwagenfall). Die Statistik interpoliert nur über Datenpunkte mit `mileage > 0`.
 
 ### `maintenanceTypes`
 ```
@@ -387,7 +404,7 @@ const CACHE = 'autowartung-vNN';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg'];
 ```
 
-**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v10`). Sonst zeigt eine installierte PWA noch den alten Stand, weil der Service Worker die alte App ausliefert.
+**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v13`). Sonst zeigt eine installierte PWA noch den alten Stand, weil der Service Worker die alte App ausliefert.
 
 Beim ersten Besuch nach Update einmal `Strg + F5` (Desktop) oder Tab neuladen (Mobile) — danach übernimmt die neue Version.
 
@@ -404,7 +421,7 @@ Beim ersten Besuch nach Update einmal `Strg + F5` (Desktop) oder Tab neuladen (M
 | Firebase Projekt-ID | `autowartung-app` |
 | Firestore Region | `europe-west3` (Frankfurt) |
 | Default Heim-Preis €/kWh | `0,300` |
-| Aktuelle Cache-Version | `autowartung-v10` |
+| Aktuelle Cache-Version | `autowartung-v13` |
 
 ---
 
