@@ -301,6 +301,7 @@
         <button class="btn btn-sm" id="btnCharge" style="background:#e1f5fe;color:#01579b" onclick="window.openChargeHistoryModal()">🔌 Laden</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStammdatenModal()">📋 Stammdaten</button>
+        <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStatistikModal()">📊 Statistik</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.exportPdf()">📄 PDF</button>
         <button class="btn btn-danger btn-sm" onclick="window.deleteVehicle()">🗑️ Löschen</button>
       </div>
@@ -495,6 +496,36 @@
     <div class="modal-actions">
       <button class="btn" style="background:#eee" onclick="window.closeModal('modalStammdaten')">Abbrechen</button>
       <button class="btn btn-primary" onclick="window.saveStammdaten()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Statistik -->
+<div class="modal-overlay" id="modalStatistik">
+  <div class="modal">
+    <h3>📊 Fahrleistungs-Statistik</h3>
+
+    <div class="form-group">
+      <label>Berechnung ab (Startdatum)</label>
+      <input type="date" id="stStart" onchange="window.fixYear(this); window.renderStatsOutput()">
+    </div>
+
+    <div class="form-group">
+      <label>Geplante Fahrleistung pro Jahr (Versicherung)</label>
+      <div id="stPlannedList" style="margin-bottom:8px"></div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-group" style="margin:0"><input type="number" id="stPlannedYear" placeholder="Jahr z.B. 2026"></div>
+        <div class="form-group" style="margin:0"><input type="text" inputmode="numeric" id="stPlannedKm" placeholder="km z.B. 15.000"></div>
+      </div>
+      <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5;margin-top:8px" onclick="window.addPlannedEntry()">+ Eintrag hinzufügen</button>
+    </div>
+
+    <button class="btn btn-primary btn-sm" style="margin-bottom:6px" onclick="window.saveStatsConfig()">💾 Einstellungen speichern</button>
+
+    <div id="stOutput" style="border-top:1px solid #eee;margin-top:12px;padding-top:14px"></div>
+
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalStatistik')">Schließen</button>
     </div>
   </div>
 </div>
@@ -1744,6 +1775,234 @@
     closeModal('modalStammdaten');
   }
 
+  // ── Statistik ─────────────────────────────────────────────────────────────────
+  let plannedDraft = [];
+
+  // Alle (Datum, km)-Datenpunkte aus allen Collections sammeln, pro Datum den höchsten Stand
+  function collectKmPoints(vehicleId) {
+    const pts = [];
+    const add = (date, mileage) => { if (date && mileage != null && Number(mileage) > 0) pts.push({ date, mileage: Number(mileage) }); };
+    const v = vehicles.find(v => v.id === vehicleId);
+    if (v) { add(v.mileageDate, v.mileage); add(v.purchaseDate, v.purchaseMileage); }
+    maintenanceRecords.filter(r => r.vehicleId === vehicleId).forEach(r => add(r.date, r.mileage));
+    repairs.filter(r => r.vehicleId === vehicleId).forEach(r => add(r.date, r.mileage));
+    services.filter(r => r.vehicleId === vehicleId).forEach(r => add(r.date, r.mileage));
+    fuelings.filter(r => r.vehicleId === vehicleId).forEach(r => add(r.date, r.mileage));
+    charges.filter(c => c.vehicleId === vehicleId).forEach(c => add(chargeEffectiveDate(c), c.mileage));
+    const byDate = {};
+    pts.forEach(p => { if (byDate[p.date] == null || p.mileage > byDate[p.date]) byDate[p.date] = p.mileage; });
+    return Object.keys(byDate).sort().map(d => ({ date: d, mileage: byDate[d] }));
+  }
+
+  // km-Stand zu beliebigem Stichtag (lineare Interpolation; keine Extrapolation über Datenrand hinaus)
+  function kmAtDate(points, dateStr) {
+    if (!points.length) return null;
+    const t = new Date(dateStr).getTime();
+    if (t <= new Date(points[0].date).getTime()) return points[0].mileage;
+    const last = points[points.length - 1];
+    if (t >= new Date(last.date).getTime()) return last.mileage;
+    for (let i = 1; i < points.length; i++) {
+      const t0 = new Date(points[i-1].date).getTime(), t1 = new Date(points[i].date).getTime();
+      if (t >= t0 && t <= t1) {
+        if (t1 === t0) return points[i].mileage;
+        return points[i-1].mileage + (t - t0) / (t1 - t0) * (points[i].mileage - points[i-1].mileage);
+      }
+    }
+    return last.mileage;
+  }
+
+  // Gefahrene km je Kalenderjahr (ab Startdatum begrenzt)
+  function calendarYearStats(points, startDate) {
+    if (!points.length) return [];
+    const todayS = todayStr();
+    const firstYear = startDate ? new Date(startDate).getFullYear() : new Date(points[0].date).getFullYear();
+    const lastYear = Math.max(new Date(points[points.length-1].date).getFullYear(), new Date().getFullYear());
+    const res = [];
+    for (let y = firstYear; y <= lastYear; y++) {
+      let ps = `${y}-01-01`;
+      if (startDate && startDate > ps) ps = startDate;
+      let pe = `${y}-12-31`;
+      if (todayS < pe) pe = todayS;
+      if (pe < ps) continue;
+      const kmStart = kmAtDate(points, ps), kmEnd = kmAtDate(points, pe);
+      if (kmStart == null || kmEnd == null) continue;
+      const partial = (startDate && startDate > `${y}-01-01`) || todayS < `${y}-12-31`;
+      res.push({ year: y, km: Math.max(0, Math.round(kmEnd - kmStart)), partial });
+    }
+    return res;
+  }
+
+  // Rollende 12-Monats-Perioden ab Startdatum (= Versicherungsjahre)
+  function insuranceYears(points, startDate) {
+    if (!startDate || !points.length) return [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const toStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const res = [];
+    const [sy, sm, sd] = startDate.split('-').map(Number);
+    let ps = new Date(sy, sm - 1, sd);
+    let guard = 0;
+    while (ps <= today && guard++ < 100) {
+      const pe = new Date(ps); pe.setFullYear(pe.getFullYear() + 1); // exklusives Periodenende
+      const isCurrent = today < pe;
+      const measEnd = isCurrent ? today : new Date(pe.getTime() - 86400000);
+      const kmStart = kmAtDate(points, toStr(ps)), kmEnd = kmAtDate(points, toStr(measEnd));
+      const totalDays = Math.round((pe - ps) / 86400000);
+      const elapsedDays = Math.max(1, Math.round((measEnd - ps) / 86400000) + 1);
+      res.push({
+        startYear: ps.getFullYear(),
+        label: `${ps.getFullYear()}/${String(ps.getFullYear() + 1).slice(2)}`,
+        psStr: toStr(ps), peStr: toStr(new Date(pe.getTime() - 86400000)),
+        km: Math.max(0, Math.round((kmEnd ?? 0) - (kmStart ?? 0))),
+        totalDays, elapsedDays, isCurrent,
+      });
+      ps = pe;
+    }
+    return res;
+  }
+
+  function statsBarChart(items) {
+    if (!items.length) return '<div style="color:#aaa;font-size:.85rem">Keine Daten.</div>';
+    const max = Math.max(...items.map(i => i.value), 1);
+    return `<div style="display:flex;flex-direction:column;gap:6px">` + items.map(i => {
+      const pct = Math.round(i.value / max * 100);
+      return `<div style="display:flex;align-items:center;gap:8px;font-size:.85rem">
+        <span style="min-width:62px;flex-shrink:0;color:#666">${i.label}${i.partial ? ' <span style="color:#bbb">*</span>' : ''}</span>
+        <div style="flex:1;background:#f0f2f5;border-radius:6px;height:20px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${i.color || '#3f51b5'};border-radius:6px"></div>
+        </div>
+        <span style="width:84px;text-align:right;flex-shrink:0;font-weight:600;color:#333">${fmtKm(i.value)}</span>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  function renderPlannedList() {
+    const sorted = [...plannedDraft].sort((a,b) => b.year - a.year);
+    document.getElementById('stPlannedList').innerHTML = sorted.length === 0
+      ? '<div style="color:#aaa;font-size:.85rem;padding:4px 0">Noch kein Planwert erfasst.</div>'
+      : sorted.map(e => {
+          const idx = plannedDraft.indexOf(e);
+          return `<div class="soh-row">
+            <span class="soh-val">${e.year}</span>
+            <span class="soh-date">${fmtKm(e.km)}</span>
+            <button class="soh-del" onclick="window.removePlannedEntry(${idx})">🗑️</button>
+          </div>`;
+        }).join('');
+  }
+
+  function addPlannedEntry() {
+    const year = parseInt(document.getElementById('stPlannedYear').value);
+    const km = parseKm(document.getElementById('stPlannedKm').value);
+    if (!year || year < 1990 || year > 2100) return alert('Bitte gültiges Jahr eingeben.');
+    if (!km) return alert('Bitte geplante km eingeben.');
+    const existing = plannedDraft.find(p => p.year === year);
+    if (existing) existing.km = km; else plannedDraft.push({ year, km });
+    document.getElementById('stPlannedYear').value = '';
+    document.getElementById('stPlannedKm').value = '';
+    renderPlannedList();
+    renderStatsOutput();
+  }
+
+  function removePlannedEntry(idx) {
+    plannedDraft.splice(idx, 1);
+    renderPlannedList();
+    renderStatsOutput();
+  }
+
+  function openStatistikModal() {
+    const v = vehicles.find(v => v.id === currentVehicleId); if (!v) return;
+    document.getElementById('stStart').value = v.statsStartDate || '';
+    plannedDraft = Array.isArray(v.plannedKm) ? v.plannedKm.map(e => ({ ...e })) : [];
+    document.getElementById('stPlannedYear').value = '';
+    document.getElementById('stPlannedKm').value = '';
+    renderPlannedList();
+    renderStatsOutput();
+    openModal('modalStatistik');
+  }
+
+  async function saveStatsConfig() {
+    await updateDoc(doc(db, 'vehicles', currentVehicleId), {
+      statsStartDate: document.getElementById('stStart').value || null,
+      plannedKm: plannedDraft.length ? plannedDraft : null,
+    });
+    alert('Einstellungen gespeichert.');
+  }
+
+  function renderStatsOutput() {
+    const out = document.getElementById('stOutput');
+    if (!out) return;
+    const points = collectKmPoints(currentVehicleId);
+    if (points.length < 1) { out.innerHTML = '<div style="color:#aaa;font-size:.9rem;text-align:center;padding:8px 0">Noch keine km-Daten vorhanden.</div>'; return; }
+    const startDate = document.getElementById('stStart').value || null;
+
+    // Block A: Gesamtkilometer pro Kalenderjahr
+    const cy = calendarYearStats(points, startDate);
+    let html = `<div style="font-weight:700;font-size:.95rem;margin-bottom:8px">📊 Gesamtkilometer pro Kalenderjahr</div>`;
+    html += statsBarChart(cy.map(c => ({ label: String(c.year), value: c.km, partial: c.partial })));
+    if (cy.some(c => c.partial)) html += `<div style="color:#bbb;font-size:.72rem;margin-top:4px">* unvollständiges Jahr (läuft noch bzw. erst ab Startdatum)</div>`;
+
+    // Block B: Versicherungsjahr
+    const iy = insuranceYears(points, startDate);
+    html += `<div style="font-weight:700;font-size:.95rem;margin:18px 0 8px">📅 Versicherungsjahr (ab Startdatum)</div>`;
+    if (!startDate) {
+      html += `<div style="color:#888;font-size:.85rem">Bitte Startdatum oben setzen, um die Versicherungsjahr-Auswertung zu sehen.</div>`;
+    } else if (!iy.length) {
+      html += `<div style="color:#888;font-size:.85rem">Startdatum liegt in der Zukunft – noch keine laufende Periode.</div>`;
+    } else {
+      const current = iy[iy.length - 1];
+      const plan = plannedDraft.find(p => p.year === current.startYear);
+      const monthsElapsed = current.elapsedDays / 30.44;
+      const avgPerMonth = monthsElapsed > 0 ? current.km / monthsElapsed : 0;
+      const projection = current.km / current.elapsedDays * current.totalDays;
+
+      html += `<div style="background:#f7f8fa;border-radius:10px;padding:12px">
+        <div style="font-weight:700;margin-bottom:8px">Aktuelle Periode ${current.label}
+          <span style="font-weight:400;color:#999;font-size:.8rem">(${fmtDate(current.psStr)} – ${fmtDate(current.peStr)})</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;padding:2px 0"><span>Gefahren bisher</span><span style="font-weight:700">${fmtKm(current.km)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;padding:2px 0"><span>Ø pro Monat</span><span style="font-weight:700">${fmtKm(Math.round(avgPerMonth))}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;padding:2px 0"><span>Hochrechnung aufs Jahr</span><span style="font-weight:700">${fmtKm(Math.round(projection))}</span></div>`;
+
+      if (plan) {
+        const usedPct = Math.round(current.km / plan.km * 100);
+        const sollPct = Math.round(current.elapsedDays / current.totalDays * 100);
+        const projPct = Math.round(projection / plan.km * 100);
+        const over = projection > plan.km;
+        const col = over ? '#e53935' : '#43a047';
+        html += `
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;padding:2px 0;border-top:1px solid #e8eaee;margin-top:6px;padding-top:8px"><span>Geplant (Versicherung)</span><span style="font-weight:700">${fmtKm(plan.km)}</span></div>
+        <div style="position:relative;background:#e9ebef;border-radius:8px;height:24px;overflow:hidden;margin:8px 0 4px">
+          <div style="width:${Math.min(usedPct,100)}%;height:100%;background:${col}"></div>
+          <div style="position:absolute;top:0;left:${Math.min(sollPct,100)}%;width:2px;height:100%;background:#222"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:#777">
+          <span>gefahren ${usedPct}% &nbsp;·&nbsp; ▏Soll heute ${sollPct}%</span>
+          <span style="color:${col};font-weight:700">Hochrechnung ${projPct}%${over ? ' ⚠️' : ' ✓'}</span>
+        </div>
+        <div style="font-size:.8rem;color:${col};margin-top:4px">${over
+            ? `Voraussichtlich ${fmtKm(Math.round(projection - plan.km))} über dem Plan.`
+            : `Voraussichtlich ${fmtKm(Math.round(plan.km - projection))} unter dem Plan.`}</div>`;
+      } else {
+        html += `<div style="font-size:.8rem;color:#999;margin-top:6px">Kein Planwert für ${current.startYear} hinterlegt – oben hinzufügen für den Vergleich.</div>`;
+      }
+      html += `</div>`;
+
+      // Abgeschlossene Perioden
+      const past = iy.slice(0, -1).reverse();
+      if (past.length) {
+        html += `<div style="font-weight:600;font-size:.85rem;margin:14px 0 6px;color:#666">Abgeschlossene Perioden</div>`;
+        html += past.map(p => {
+          const pl = plannedDraft.find(x => x.year === p.startYear);
+          const cmp = pl ? (p.km > pl.km
+            ? `<span style="color:#e53935">+${fmtKm(p.km - pl.km)} über Plan</span>`
+            : `<span style="color:#43a047">−${fmtKm(pl.km - p.km)} unter Plan</span>`) : '<span style="color:#bbb">kein Plan</span>';
+          return `<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0;border-bottom:1px solid #f3f3f3">
+            <span>${p.label}</span><span style="font-weight:600">${fmtKm(p.km)}</span><span style="text-align:right;min-width:120px">${cmp}</span></div>`;
+        }).join('');
+      }
+    }
+
+    out.innerHTML = html;
+  }
+
   // Wartungstyp
   function openTypeModal(id=null) {
     editingTypeId=id;
@@ -1998,6 +2257,7 @@
     openFuelHistoryModal, openFuelingModal, saveFueling, deleteFueling, toggleFuelingFields, updateFuelPrice,
     openChargeHistoryModal, openChargeModal, saveCharge, deleteCharge, toggleChargeFields, updateChargePreview, saveKwhPrice,
     openStammdatenModal, saveStammdaten, addSohEntry, removeSohEntry,
+    openStatistikModal, saveStatsConfig, addPlannedEntry, removePlannedEntry, renderStatsOutput,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
     exportData, importData, fixYear, exportPdf,
