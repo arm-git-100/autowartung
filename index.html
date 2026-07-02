@@ -264,6 +264,7 @@
   <button class="back-btn" id="backBtn" style="display:none" onclick="window.showDashboard()">&#8592;</button>
   <h1 id="headerTitle">🚗 Autowartung</h1>
   <div style="display:flex;align-items:center;gap:8px">
+    <span id="appVersion" style="font-size:.7rem;opacity:.55;white-space:nowrap" title="App-Version"></span>
     <span class="user-info" id="userInfo"></span>
     <button class="btn btn-white btn-sm" id="headerActionBtn" onclick="window.openVehicleModal()">+ Fahrzeug</button>
     <button class="btn-logout" onclick="window.doSignOut()" title="Abmelden">⏻</button>
@@ -2244,6 +2245,19 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
   }
+
+  // Version aus dem aktiven SW-Cache lesen (einzige Pflegestelle bleibt sw.js)
+  async function showAppVersion() {
+    const el = document.getElementById('appVersion');
+    if (!el || !('caches' in window)) return;
+    try {
+      const keys = await caches.keys();
+      const k = keys.find(k => k.startsWith('autowartung-'));
+      if (k) el.textContent = k.replace('autowartung-', '');
+    } catch { /* offline / nicht verfügbar → keine Anzeige */ }
+  }
+  showAppVersion();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', showAppVersion);
 
   // ── Expose to window ─────────────────────────────────────────────────────────
   Object.assign(window, {

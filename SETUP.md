@@ -1,6 +1,6 @@
 # Autowartung – Vollständige Einrichtungsdokumentation
 
-Stand: 2. Juli 2026 · App-Cache-Version: `v14`
+Stand: 2. Juli 2026 · App-Cache-Version: `v15`
 
 ---
 
@@ -406,7 +406,9 @@ const SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './ico
 
 **Strategie: „Netzwerk zuerst" (seit v14).** Bei bestehender Internetverbindung lädt die App immer die aktuelle Datei vom Server und aktualisiert damit den Cache; der Cache dient nur noch als **Offline-Reserve**. Vorteil: Updates kommen nach einem einfachen Neuladen automatisch an — kein manuelles „Service Worker abmelden" mehr nötig. (Vorher, bis v13: „Cache zuerst" — dort blieb der alte Stand hartnäckig erhalten.)
 
-**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v14`). Der Versionswechsel räumt beim Aktivieren alte Caches auf.
+**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v15`). Der Versionswechsel räumt beim Aktivieren alte Caches auf.
+
+> **Versionsanzeige in der App:** Oben rechts in der Kopfzeile steht die aktuell geladene Version (z. B. `v15`). Sie wird **live aus dem SW-Cache** gelesen — einzige Pflegestelle bleibt `sw.js`. So sieht man auch sofort, ob ein Gerät schon die neue Version hat.
 
 Nach einem Update genügt normalerweise ein einfaches Neuladen. Falls doch mal ein alter Stand klebt (z. B. weil der PC offline war): `Strg + F5` (Desktop) bzw. Tab neuladen (Mobile).
 
@@ -423,7 +425,7 @@ Nach einem Update genügt normalerweise ein einfaches Neuladen. Falls doch mal e
 | Firebase Projekt-ID | `autowartung-app` |
 | Firestore Region | `europe-west3` (Frankfurt) |
 | Default Heim-Preis €/kWh | `0,300` |
-| Aktuelle Cache-Version | `autowartung-v14` |
+| Aktuelle Cache-Version | `autowartung-v15` |
 
 ---
 
