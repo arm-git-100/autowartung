@@ -1,6 +1,6 @@
 # Autowartung – Vollständige Einrichtungsdokumentation
 
-Stand: 22. Juni 2026 · App-Cache-Version: `v13`
+Stand: 2. Juli 2026 · App-Cache-Version: `v14`
 
 ---
 
@@ -404,9 +404,11 @@ const CACHE = 'autowartung-vNN';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg'];
 ```
 
-**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v13`). Sonst zeigt eine installierte PWA noch den alten Stand, weil der Service Worker die alte App ausliefert.
+**Strategie: „Netzwerk zuerst" (seit v14).** Bei bestehender Internetverbindung lädt die App immer die aktuelle Datei vom Server und aktualisiert damit den Cache; der Cache dient nur noch als **Offline-Reserve**. Vorteil: Updates kommen nach einem einfachen Neuladen automatisch an — kein manuelles „Service Worker abmelden" mehr nötig. (Vorher, bis v13: „Cache zuerst" — dort blieb der alte Stand hartnäckig erhalten.)
 
-Beim ersten Besuch nach Update einmal `Strg + F5` (Desktop) oder Tab neuladen (Mobile) — danach übernimmt die neue Version.
+**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v14`). Der Versionswechsel räumt beim Aktivieren alte Caches auf.
+
+Nach einem Update genügt normalerweise ein einfaches Neuladen. Falls doch mal ein alter Stand klebt (z. B. weil der PC offline war): `Strg + F5` (Desktop) bzw. Tab neuladen (Mobile).
 
 ---
 
@@ -421,7 +423,7 @@ Beim ersten Besuch nach Update einmal `Strg + F5` (Desktop) oder Tab neuladen (M
 | Firebase Projekt-ID | `autowartung-app` |
 | Firestore Region | `europe-west3` (Frankfurt) |
 | Default Heim-Preis €/kWh | `0,300` |
-| Aktuelle Cache-Version | `autowartung-v13` |
+| Aktuelle Cache-Version | `autowartung-v14` |
 
 ---
 
