@@ -1,4 +1,4 @@
-const CACHE = 'autowartung-v15';
+const CACHE = 'autowartung-v16';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg'];
 
 self.addEventListener('install', e => {
