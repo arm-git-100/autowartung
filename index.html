@@ -805,10 +805,12 @@
   const accessoriesCol = collection(db, 'accessories');
   const attachmentsCol = collection(db, 'attachments');
   const workshopsCol   = collection(db, 'workshops');
+  const metaBackupRef  = doc(db, 'meta', 'backup');   // Backup-Datum, geräteübergreifend
 
   // ── State ───────────────────────────────────────────────────────────────────
   let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [], fuelings = [], charges = [], accessories = [], attachments = [], workshops = [];
   let attachmentCtx = null, attachmentDraft = [];
+  let remoteBackupDate = null, backupMetaLoaded = false;
   let currentVehicleId = null, activeTab = 'wartungen';
   let appReady = false, typesSeeded = false;
   const collectionsReady = new Set();
@@ -942,6 +944,13 @@
       populateWorkshopDatalist();
       if (document.getElementById('modalWorkshops').classList.contains('active')) renderWorkshopsList();
     }, handleFbError);
+
+    // Backup-Datum: bewusst ohne markReady, damit der App-Start nicht daran hängt
+    onSnapshot(metaBackupRef, snap => {
+      remoteBackupDate = (snap.exists() && snap.data().lastBackupDate) || null;
+      backupMetaLoaded = true;
+      renderBackupReminder();
+    }, handleFbError);
   }
 
   function markReady(name) {
@@ -1063,27 +1072,44 @@
     renderDashboard();
   }
 
-  // ── Backup-Reminder (pro Gerät, localStorage) ────────────────────────────────
+  // ── Backup-Reminder (Datum geräteübergreifend in Firestore: meta/backup) ────
   const BACKUP_REMINDER_DAYS = 60;
+  // Lokal und Firestore können auseinanderlaufen (Export am PC, Handy weiß nichts davon)
+  // → es gilt immer das neuere der beiden Daten, die andere Seite wird nachgezogen.
+  function effectiveBackupDate() {
+    const l = localStorage.getItem('lastBackupDate'), r = remoteBackupDate;
+    if (!l) return r || null;
+    if (!r) return l;
+    return l > r ? l : r;
+  }
   function daysSinceBackup() {
-    const d = localStorage.getItem('lastBackupDate');
+    const d = effectiveBackupDate();
     if (!d) return null;
     return Math.floor((new Date(todayStr()) - new Date(d)) / 86400000);
+  }
+  async function setBackupDate(date) {
+    localStorage.setItem('lastBackupDate', date);
+    remoteBackupDate = date;
+    // Offline genügt localStorage, Firestore synchronisiert später selbst nach
+    try { await setDoc(metaBackupRef, { lastBackupDate: date }, { merge: true }); }
+    catch (err) { console.error(err); }
   }
   function renderBackupReminder() {
     const banner = document.getElementById('backupReminder');
     const info   = document.getElementById('lastBackupInfo');
     if (!banner || !info) return;
-    // Basislinie beim ersten Laden setzen (verhindert Fehlalarm bei neuem Feature)
-    let last = localStorage.getItem('lastBackupDate');
-    if (!last) { localStorage.setItem('lastBackupDate', todayStr()); last = todayStr(); }
+    // Erst urteilen, wenn das Datum aus Firestore da ist – sonst Fehlalarm oder Fehlstempel
+    if (!backupMetaLoaded) { banner.style.display = 'none'; info.textContent = ''; return; }
+    const last = effectiveBackupDate();
+    // Basislinie auf neuem Gerät setzen bzw. die ältere Seite nachziehen. Das setDoc
+    // löst den Snapshot aus, der rendert erneut – keine Schleife, weil dann beide gleich sind.
+    if (!last) { setBackupDate(todayStr()); return; }
+    if (last !== localStorage.getItem('lastBackupDate') || last !== remoteBackupDate) setBackupDate(last);
     info.textContent = 'Letztes Backup: ' + fmtDate(last);
     const days = daysSinceBackup();
     const due  = vehicles.length > 0 && days >= BACKUP_REMINDER_DAYS;
     if (!due || sessionStorage.getItem('backupReminderSnoozed')) { banner.style.display = 'none'; return; }
-    const msg = days === null
-      ? 'Du hast noch kein Backup erstellt. Sichere deine Daten per Export.'
-      : `Dein letztes Backup ist ${days} Tage her. Zeit für eine neue Sicherung!`;
+    const msg = `Dein letztes Backup ist ${days} Tage her. Zeit für eine neue Sicherung!`;
     banner.innerHTML =
         '<div class="br-text">🗄️ ' + msg + '</div>'
       + '<div class="br-actions">'
@@ -2671,7 +2697,7 @@
     const url  = URL.createObjectURL(blob);
     const a    = Object.assign(document.createElement('a'), {href:url, download:`autowartung_backup_${todayStr()}.json`});
     a.click(); URL.revokeObjectURL(url);
-    localStorage.setItem('lastBackupDate', todayStr());
+    setBackupDate(todayStr());
     sessionStorage.removeItem('backupReminderSnoozed');
     renderBackupReminder();
   }
