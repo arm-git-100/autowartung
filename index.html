@@ -156,6 +156,11 @@
     .repair-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
     .repair-desc { font-weight:600; font-size:.95rem; flex:1; padding-right:10px; }
     .repair-meta { font-size:.82rem; color:#888; }
+    .acc-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:14px 16px; margin-bottom:10px; border-left:4px solid #c62828; }
+    .acc-status { display:inline-block; font-size:.72rem; font-weight:700; padding:2px 9px; border-radius:10px; }
+    .acc-status.offen      { background:#ffebee; color:#c62828; }
+    .acc-status.reparatur  { background:#fff3e0; color:#e65100; }
+    .acc-status.reguliert  { background:#e8f5e9; color:#2e7d32; }
 
     /* ── Fuel ── */
     .fuel-card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:12px 14px; margin-bottom:8px; border-left:4px solid #ff9800; }
@@ -334,6 +339,7 @@
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openVehicleModal(currentVehicleId)">✏️ Bearbeiten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStammdatenModal()">📋 Stammdaten</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.openStatistikModal()">📊 Statistik</button>
+        <button class="btn btn-sm" style="background:#ffebee;color:#c62828" onclick="window.openAccidentsModal()">💥 Unfälle</button>
         <button class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="window.exportPdf()">📄 PDF</button>
         <button class="btn btn-danger btn-sm" onclick="window.deleteVehicle()">🗑️ Löschen</button>
       </div>
@@ -737,6 +743,68 @@
 <datalist id="workshopOptions"></datalist>
 
 <!-- Modal: Werkstätten (Liste) -->
+<!-- Modal: Unfälle -->
+<div class="modal-overlay" id="modalAccidents">
+  <div class="modal">
+    <h3>💥 Unfälle</h3>
+    <div id="accidentList" style="margin-bottom:12px"></div>
+    <button class="btn btn-sm" style="background:#ffebee;color:#c62828" onclick="window.openAccidentEdit()">+ Unfall erfassen</button>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalAccidents')">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Unfall erfassen / bearbeiten -->
+<div class="modal-overlay" id="modalAccidentEdit">
+  <div class="modal">
+    <h3 id="modalAccidentEditTitle">Unfall erfassen</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Datum</label><input type="date" id="acDate" onchange="window.fixYear(this)"></div>
+      <div class="form-group"><label>Kilometerstand</label><input type="text" inputmode="numeric" id="acMileage" placeholder="z.B. 87.500"></div>
+    </div>
+    <div class="form-group"><label>Hergang</label><textarea id="acDesc" rows="4" placeholder="z.B. Auffahrunfall an der Kreuzung..."></textarea></div>
+    <div class="form-group"><label>Ort</label><input type="text" id="acPlace" placeholder="z.B. Hauptstraße, Musterstadt"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Schuldfrage</label>
+        <select id="acFault">
+          <option value="">– bitte wählen –</option>
+          <option value="selbst">Selbst verschuldet</option>
+          <option value="gegner">Gegner verschuldet</option>
+          <option value="unklar">Ungeklärt</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="acStatus">
+          <option value="offen">Offen</option>
+          <option value="reparatur">In Reparatur</option>
+          <option value="reguliert">Reguliert</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Unfallgegner</label><textarea id="acOpponent" rows="2" placeholder="Name, Kennzeichen, Versicherung"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Versicherung</label><input type="text" id="acInsurer" placeholder="z.B. HUK-Coburg"></div>
+      <div class="form-group"><label>Schadensnummer</label><input type="text" id="acClaimNo" placeholder="z.B. 2026/123456"></div>
+    </div>
+    <div class="form-group"><label>Gutachter / Kostenvoranschlag</label><input type="text" id="acExpert" placeholder="z.B. DEKRA München"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Schadenhöhe (€)</label><input type="number" step="0.01" id="acDamage" placeholder="z.B. 3200.00"></div>
+      <div class="form-group"><label>Selbstbeteiligung (€)</label><input type="number" step="0.01" id="acDeductible" placeholder="z.B. 300.00"></div>
+    </div>
+    <div class="form-group">
+      <label>Gutachten / Fotos</label>
+      <div id="acAttachments" class="att-strip"></div>
+      <input type="file" id="acAttInput" accept="image/*,application/pdf" multiple style="display:none" onchange="window.attachFiles(event)">
+      <button type="button" class="btn btn-sm" style="background:#e8eaf6;color:#3f51b5" onclick="document.getElementById('acAttInput').click()">📎 Gutachten / Foto hinzufügen</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:#eee" onclick="window.closeModal('modalAccidentEdit')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="window.saveAccident()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalWorkshops">
   <div class="modal">
     <h3>🏭 Werkstätten</h3>
@@ -805,15 +873,17 @@
   const accessoriesCol = collection(db, 'accessories');
   const attachmentsCol = collection(db, 'attachments');
   const workshopsCol   = collection(db, 'workshops');
+  const accidentsCol   = collection(db, 'accidents');
   const metaBackupRef  = doc(db, 'meta', 'backup');   // Backup-Datum, geräteübergreifend
 
   // ── State ───────────────────────────────────────────────────────────────────
-  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [], fuelings = [], charges = [], accessories = [], attachments = [], workshops = [];
+  let vehicles = [], maintenanceTypes = [], maintenanceRecords = [], repairs = [], services = [], fuelings = [], charges = [], accessories = [], attachments = [], workshops = [], accidents = [];
   let attachmentCtx = null, attachmentDraft = [];
   let remoteBackupDate = null, backupMetaLoaded = false;
   let currentVehicleId = null, activeTab = 'wartungen';
   let appReady = false, typesSeeded = false;
   const collectionsReady = new Set();
+  let editingAccidentId = null;
   let editingRecordId = null, editingRepairId = null, editingTypeId = null, editingServiceId = null, editingFuelingId = null, editingChargeId = null, editingAccessoryId = null;
   let sohHistoryDraft = [];
   const DEFAULT_KWH_PRICE_FALLBACK = 0.30;
@@ -936,6 +1006,7 @@
       attachments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       markReady('attachments');
       if (attachmentCtx) renderAttachmentStrip();
+      if (document.getElementById('modalAccidents').classList.contains('active')) renderAccidentsList();
     }, handleFbError);
 
     onSnapshot(workshopsCol, snap => {
@@ -943,6 +1014,12 @@
       markReady('workshops');
       populateWorkshopDatalist();
       if (document.getElementById('modalWorkshops').classList.contains('active')) renderWorkshopsList();
+    }, handleFbError);
+
+    onSnapshot(accidentsCol, snap => {
+      accidents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      markReady('accidents');
+      if (document.getElementById('modalAccidents').classList.contains('active')) renderAccidentsList();
     }, handleFbError);
 
     // Backup-Datum: bewusst ohne markReady, damit der App-Start nicht daran hängt
@@ -955,7 +1032,7 @@
 
   function markReady(name) {
     collectionsReady.add(name);
-    if (collectionsReady.size >= 10 && !appReady) {
+    if (collectionsReady.size >= 11 && !appReady) {
       appReady = true;
       showScreen('app');
     }
@@ -1317,16 +1394,19 @@
     fuelings.filter(f=>f.vehicleId===currentVehicleId).forEach(f=>batch.delete(doc(db,'fuelings',f.id)));
     charges.filter(c=>c.vehicleId===currentVehicleId).forEach(c=>batch.delete(doc(db,'charges',c.id)));
     accessories.filter(a=>a.vehicleId===currentVehicleId).forEach(a=>batch.delete(doc(db,'accessories',a.id)));
+    accidents.filter(a=>a.vehicleId===currentVehicleId).forEach(a=>batch.delete(doc(db,'accidents',a.id)));
     // zugehörige Belege (Fahrzeug + dessen Wartungen/Reparaturen/Kundendienste)
     const vId = currentVehicleId;
     const recIds = new Set(maintenanceRecords.filter(r=>r.vehicleId===vId).map(r=>r.id));
     const repIds = new Set(repairs.filter(r=>r.vehicleId===vId).map(r=>r.id));
     const svcIds = new Set(services.filter(s=>s.vehicleId===vId).map(s=>s.id));
+    const accIds = new Set(accidents.filter(a=>a.vehicleId===vId).map(a=>a.id));
     attachments.filter(a =>
          (a.ownerType==='vehicle'     && a.ownerId===vId)
       || (a.ownerType==='maintenance' && recIds.has(a.ownerId))
       || (a.ownerType==='repair'      && repIds.has(a.ownerId))
       || (a.ownerType==='service'     && svcIds.has(a.ownerId))
+      || (a.ownerType==='accident'    && accIds.has(a.ownerId))
     ).forEach(a=>batch.delete(doc(db,'attachments',a.id)));
     await batch.commit();
     currentVehicleId = null;
@@ -2104,6 +2184,111 @@
       .map(w => `<option value="${escHtml(w.name)}"></option>`).join('');
   }
 
+  // ── Unfälle ──────────────────────────────────────────────────────────────────
+  const FAULT_LABEL  = { selbst: 'Selbst verschuldet', gegner: 'Gegner verschuldet', unklar: 'Ungeklärt' };
+  const STATUS_LABEL = { offen: 'Offen', reparatur: 'In Reparatur', reguliert: 'Reguliert' };
+
+  function openAccidentsModal() {
+    renderAccidentsList();
+    openModal('modalAccidents');
+  }
+
+  function renderAccidentsList() {
+    const list = document.getElementById('accidentList');
+    if (!list) return;
+    const filtered = accidents.filter(a => a.vehicleId === currentVehicleId)
+                              .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="empty-icon">💥</div>Noch kein Unfall erfasst.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(a => {
+      const l1 = ['📅 ' + fmtDate(a.date)];
+      if (a.mileage != null) l1.push('📍 ' + fmtKm(a.mileage));
+      if (a.place)           l1.push('🗺️ ' + escHtml(a.place));
+      if (a.fault)           l1.push('⚖️ ' + FAULT_LABEL[a.fault]);
+      const l2 = [];
+      if (a.insurer)            l2.push('🏦 ' + escHtml(a.insurer));
+      if (a.claimNo)            l2.push('🔖 ' + escHtml(a.claimNo));
+      if (a.expert)             l2.push('📝 ' + escHtml(a.expert));
+      if (a.deductible != null) l2.push('SB ' + fmtEur(a.deductible));
+      if (a.opponent)           l2.push('🚗 ' + escHtml(a.opponent).replace(/\n/g, ', '));
+      const st = a.status || 'offen';
+      return `<div class="acc-card">
+        <div class="repair-card-top">
+          <span class="repair-desc" style="white-space:pre-wrap">${escHtml(a.description)}</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            ${a.damage!=null?`<span style="color:#c62828;font-weight:700;font-size:.9rem;white-space:nowrap">${fmtEur(a.damage)}</span>`:''}
+            <button class="btn-icon" onclick="window.openAccidentEdit('${a.id}')">✏️</button>
+            <button class="btn-icon" onclick="window.deleteAccident('${a.id}')">🗑️</button>
+          </div>
+        </div>
+        <div class="repair-meta">${l1.join(' &nbsp;·&nbsp; ')}${attachmentBadge('accident', a.id)}</div>
+        ${l2.length ? `<div class="repair-meta" style="margin-top:3px">${l2.join(' &nbsp;·&nbsp; ')}</div>` : ''}
+        <div style="margin-top:7px"><span class="acc-status ${st}">${STATUS_LABEL[st]}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  function openAccidentEdit(id = null) {
+    editingAccidentId = id;
+    const a = id ? accidents.find(x => x.id === id) : null;
+    document.getElementById('modalAccidentEditTitle').textContent = id ? 'Unfall bearbeiten' : 'Unfall erfassen';
+    document.getElementById('acDate').value       = a?.date        || todayStr();
+    document.getElementById('acMileage').value    = a?.mileage     ?? vehicles.find(v => v.id === currentVehicleId)?.mileage ?? '';
+    document.getElementById('acDesc').value       = a?.description || '';
+    document.getElementById('acPlace').value      = a?.place       || '';
+    document.getElementById('acFault').value      = a?.fault       || '';
+    document.getElementById('acStatus').value     = a?.status      || 'offen';
+    document.getElementById('acOpponent').value   = a?.opponent    || '';
+    document.getElementById('acInsurer').value    = a?.insurer     || '';
+    document.getElementById('acClaimNo').value    = a?.claimNo     || '';
+    document.getElementById('acExpert').value     = a?.expert      || '';
+    document.getElementById('acDamage').value     = a?.damage      ?? '';
+    document.getElementById('acDeductible').value = a?.deductible  ?? '';
+    attachmentDraft = [];
+    // deferred: neue Unfälle haben noch keine ID, Belege wandern beim Speichern mit
+    attachmentCtx = { type: 'accident', id: id || null, containerId: 'acAttachments', deferred: true };
+    renderAttachmentStrip();
+    openModal('modalAccidentEdit');
+  }
+
+  async function saveAccident() {
+    const description = document.getElementById('acDesc').value.trim();
+    const date = document.getElementById('acDate').value;
+    if (!description) return alert('Bitte den Hergang beschreiben.');
+    const txt = id => document.getElementById(id).value.trim() || null;
+    const num = id => { const v = document.getElementById(id).value; return v ? parseFloat(v) : null; };
+    const mileage = parseKm(document.getElementById('acMileage').value);
+    const data = {
+      vehicleId: currentVehicleId, description, date, mileage,
+      place:      txt('acPlace'),
+      fault:      document.getElementById('acFault').value  || null,
+      status:     document.getElementById('acStatus').value || 'offen',
+      opponent:   txt('acOpponent'),
+      insurer:    txt('acInsurer'),
+      claimNo:    txt('acClaimNo'),
+      expert:     txt('acExpert'),
+      damage:     num('acDamage'),
+      deductible: num('acDeductible'),
+    };
+    let ownerId = editingAccidentId;
+    if (editingAccidentId) { await updateDoc(doc(db, 'accidents', editingAccidentId), data); }
+    else { const ref = await addDoc(accidentsCol, { ...data, createdAt: new Date().toISOString() }); ownerId = ref.id; }
+    await persistDraftAttachments('accident', ownerId);
+    await maybeUpdateVehicleMileage(mileage, date);
+    editingAccidentId = null;
+    closeModal('modalAccidentEdit');
+    renderAccidentsList();
+  }
+
+  async function deleteAccident(id) {
+    if (!confirm('Unfall mit allen Gutachten und Fotos löschen?')) return;
+    await deleteDoc(doc(db, 'accidents', id));
+    await deleteAttachmentsFor('accident', id);
+    renderAccidentsList();
+  }
+
   function openWorkshopsModal() {
     renderWorkshopsList();
     openModal('modalWorkshops');
@@ -2692,7 +2877,7 @@
 
   // ── Export / Import ──────────────────────────────────────────────────────────
   function exportData() {
-    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs, services, fuelings, charges, accessories, attachments, workshops };
+    const payload = { vehicles, maintenanceTypes, maintenanceRecords, repairs, services, fuelings, charges, accessories, attachments, workshops, accidents };
     const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     const url  = URL.createObjectURL(blob);
     const a    = Object.assign(document.createElement('a'), {href:url, download:`autowartung_backup_${todayStr()}.json`});
@@ -2712,7 +2897,7 @@
         if (!confirm('Alle aktuellen Daten werden ersetzt. Fortfahren?')) return;
 
         const b1 = writeBatch(db);
-        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs,...services,...fuelings,...charges,...accessories,...attachments,...workshops].forEach(x => {
+        [...vehicles,...maintenanceTypes,...maintenanceRecords,...repairs,...services,...fuelings,...charges,...accessories,...attachments,...workshops,...accidents].forEach(x => {
           const col = vehicles.includes(x)?'vehicles'
                     : maintenanceTypes.includes(x)?'maintenanceTypes'
                     : maintenanceRecords.includes(x)?'maintenanceRecords'
@@ -2722,7 +2907,8 @@
                     : charges.includes(x)?'charges'
                     : accessories.includes(x)?'accessories'
                     : attachments.includes(x)?'attachments'
-                    : 'workshops';
+                    : workshops.includes(x)?'workshops'
+                    : 'accidents';
           b1.delete(doc(db,col,x.id));
         });
         await b1.commit();
@@ -2739,6 +2925,7 @@
         write('accessories',       imp.accessories);
         write('attachments',       imp.attachments);
         write('workshops',         imp.workshops);
+        write('accidents',         imp.accidents);
         await b2.commit();
         alert('✅ Import erfolgreich!');
       } catch(err) { alert('Fehler: '+err.message); }
@@ -2779,6 +2966,7 @@
     openStammdatenModal, saveStammdaten, addSohEntry, removeSohEntry,
     attachFiles, viewAttachment, closeAttViewer, renameAttachment, deleteAttachment,
     openWorkshopsModal, openWorkshopEdit, saveWorkshop, deleteWorkshop, openWorkshopByName,
+    openAccidentsModal, openAccidentEdit, saveAccident, deleteAccident,
     openStatistikModal, saveStatsConfig, addPlannedEntry, removePlannedEntry, renderStatsOutput,
     openTypeModal, saveType, deleteType,
     switchTab, openModal, closeModal,
