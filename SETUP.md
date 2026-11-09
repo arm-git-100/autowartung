@@ -1,6 +1,6 @@
 # Autowartung – Vollständige Einrichtungsdokumentation
 
-Stand: 2. Juli 2026 · App-Cache-Version: `v15`
+Stand: 9. November 2026 · App-Cache-Version: `v23`
 
 ---
 
@@ -53,7 +53,8 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
 - Status-Badges: Anzahl OK / bald fällig / überfällig
 - Bei Verbrennern: Ø-Verbrauch in l/100 km
 - Bei Elektro: Ø-Verbrauch in kWh/100 km
-- Buttons: 📥 Export · 📤 Import · ➕ Fahrzeug
+- Buttons: 🏭 Werkstätten · 📥 Export · 📤 Import · ➕ Fahrzeug
+- Unter der Fahrzeug-Zahl steht das Datum des letzten Backups; ist es älter als 60 Tage, erscheint oben die **Backup-Erinnerung** (→ Abschnitt 14)
 
 ### Fahrzeug-Detailansicht
 **Action-Leiste:**
@@ -63,6 +64,7 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
 - ✏️ Bearbeiten
 - 📋 Stammdaten
 - 📊 Statistik
+- 💥 Unfälle
 - 📄 PDF
 - 🗑️ Löschen
 
@@ -75,12 +77,15 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
    - Verwaltung der **Wartungstypen** (Name, Icon, Intervalle km/Monate)
    - 22 vordefinierte Typen werden beim ersten Start automatisch angelegt
    - Eigene Typen können hinzugefügt und nur eigene wieder gelöscht werden
+   - 📎 Belege / Fotos je Wartungseintrag möglich
 
 2. **🔨 Reparaturen**
    - Beschreibung (mehrzeilig), Datum, Km, Werkstatt, Kosten
+   - 📎 Belege / Fotos möglich
 
 3. **🛠️ Kundendienste**
    - Datum, Km, Werkstatt, Beschreibung (mehrzeilig), Kosten
+   - 📎 Belege / Fotos möglich
 
 4. **🛍️ Zubehör**
    - Datum, Beschreibung (mehrzeilig), Preis (optional)
@@ -98,6 +103,8 @@ Es gibt keinen Build-Prozess und kein npm — du editierst direkt `index.html`, 
 - 🔌 **Öffentliche Ladung**: Datum, kWh, Gesamtpreis, Km (optional) → €/kWh berechnet
 - Ø-Verbrauch (kWh/100 km) ab 2 Einträgen mit Km
 
+> **Kilometerstand-Automatik (seit v16):** Wird bei einer Wartung, Reparatur, einem Kundendienst oder einem Unfall ein Km-Stand erfasst, der **höher** ist als der am Fahrzeug gespeicherte, wird der Fahrzeug-Km-Stand automatisch mitgezogen (inkl. Datum). Niedrigere Werte ändern nichts — Nachträge überschreiben also keinen aktuelleren Stand.
+
 ### Stammdaten (Modal)
 Modell, Fahrgestellnummer, Erstzulassung, Farbcode, Schlüssel 2.1/2.2, Kaufdatum, Kaufpreis, **Km bei Kauf**, Gekauft von (Händler/Privat), Zubehör bei Kauf (Freitext), Öl Norm/Menge, Reifengröße Sommer/Winter, **Infos / Notizen** (Freitext), Batterie Nettokapazität, **SoH-Historie** (mehrere Messungen mit Datum)
 
@@ -112,11 +119,40 @@ Fahrleistungs-Auswertung, vollständig **automatisch** aus allen vorhandenen km-
 - **📊 Gesamtkilometer pro Kalenderjahr** – Balkendiagramm; unvollständige Jahre (laufend bzw. ab Startdatum) mit `*` markiert
 - **📅 Versicherungsjahr (ab Startdatum)** – rollende 12-Monats-Periode (z. B. 15.06.2026–14.06.2027) mit: gefahren bisher, Ø pro Monat, Hochrechnung aufs Jahr, Plan-Vergleich (Fortschrittsbalken mit Soll-Marke, grün ≤ Plan / rot > Plan, Klartext „voraussichtlich X km über/unter Plan") sowie einer Liste abgeschlossener Perioden mit Ist vs. Plan
 
+### Belege / Fotos (seit v17/v18)
+PDFs und Bilder lassen sich an **Stammdaten, Wartungen, Reparaturen, Kundendienste und Unfälle** anhängen (Betankungen und Ladungen bewusst **nicht**).
+
+- Speicherung als **Base64 im Firestore-Dokument** (Sammlung `attachments`) — kein Firebase Storage, also kein Blaze-Tarif nötig
+- Bilder werden vor dem Speichern automatisch auf **max. 1400 px** verkleinert und als JPEG mit 72 % gespeichert; PDFs bleiben unverändert
+- Jeder Beleg bekommt einen frei wählbaren Namen, Thumbnails in der Liste, Vollbild-Viewer, PDFs als 📄
+- Auf den Karten zeigt ein 📎-Abzeichen die Anzahl der Belege
+- Beim Löschen eines Eintrags oder Fahrzeugs werden die zugehörigen Belege mitgelöscht (keine Waisen)
+- Neue Einträge haben noch keine ID — die Belege werden solange als Entwurf gehalten und beim Speichern übernommen; Abbrechen verwirft sie
+
+### Werkstätten (Modal, seit v20)
+Adressbuch mit Name, Ansprechpartner, Telefon, E-Mail, Adresse, Notizen. Die Namen erscheinen als Vorschlagsliste in den Werkstatt-Feldern von Reparaturen und Kundendiensten; ein Klick auf einen Werkstatt-Namen in den Listen öffnet den Eintrag.
+
+### Unfälle (Modal, seit v22/v23)
+Pro Fahrzeug erreichbar über 💥 **Unfälle** in der Action-Leiste. Liste aller Vorfälle (neueste zuerst) mit Status-Abzeichen, dazu je Vorfall:
+
+- Datum, Kilometerstand, Hergang (mehrzeilig), Ort
+- **Schuldfrage**: Selbst verschuldet / Gegner verschuldet / Ungeklärt
+- **Unfallgegner** (Freitext: Name, Kennzeichen, Versicherung)
+- **Versicherung** und **Schadensnummer**
+- **Gutachter / Kostenvoranschlag** (Freitext)
+- Vier getrennte Beträge: **Kosten lt. Gutachten**, **Erstattung Versicherung**, **tatsächliche Kosten** (z. B. bei Eigenreparatur) und **Selbstbeteiligung**
+- **Status**: Offen / In Reparatur / Reguliert
+- 📎 Gutachten (PDF) und Fotos
+
+Auf der Karte stehen alle gesetzten Beträge in einer eigenen Zeile; oben rechts in Rot der tatsächliche Betrag, ersatzweise der Gutachtenwert. Unfälle erscheinen bewusst **nicht** im PDF-Ausdruck.
+
 ### PDF-Export
 Komplette Wartungshistorie inkl. Stammdaten, Wartungen, Reparaturen, Kundendienste, Zubehör, Tankungen, Ladungen — eine HTML-Seite, die Druck-Dialog automatisch öffnet (→ als PDF speicherbar).
 
 ### Datensicherung
-- **Export**: JSON-Datei mit allen 8 Collections (Stand 22.06.2026 vollständig; Statistik-Einstellungen sind Felder in `vehicles` und damit enthalten)
+- **Export**: JSON-Datei mit allen 11 Collections (Stand 09.11.2026 vollständig; Statistik-Einstellungen sind Felder in `vehicles` und damit enthalten)
+- **Belege und Fotos sind im Export enthalten**, weil sie als Base64 in `attachments` liegen — der Export ist dadurch deutlich größer (Größenordnung MB statt KB)
+- **Backup-Erinnerung**: nach 60 Tagen ohne Export; das Datum liegt geräteübergreifend in Firestore (→ Abschnitt 14)
 - **Import**: Komplettes Überschreiben der Cloud-Daten
 - **Eingabe-Komfort**: Km-Felder akzeptieren Punkt als Tausender-Trenner (`100.000` = `100000`)
 
@@ -233,6 +269,38 @@ date (YYYY-MM-DD), kwh, totalCost, mileage (optional)
 ```
 vehicleId, date, description (mehrzeilig), cost (number|null)
 ```
+
+### `attachments`
+```
+ownerType ('vehicle'|'maintenance'|'repair'|'service'|'accident'),
+ownerId   (ID des zugehörigen Dokuments),
+name (Freitext), mimeType, size, data (Base64-Data-URL), createdAt
+```
+Bilder werden vor dem Speichern auf max. 1400 px verkleinert (JPEG 72 %). Beim Löschen des Besitzer-Dokuments werden die Anhänge mitgelöscht.
+
+### `workshops`
+```
+name, contact, phone, email, address, notes, createdAt
+```
+Nicht fahrzeugbezogen — ein gemeinsames Adressbuch.
+
+### `accidents`
+```
+vehicleId, date, mileage, description (Hergang), place,
+fault ('selbst'|'gegner'|'unklar'|null),
+status ('offen'|'reparatur'|'reguliert'),
+opponent, insurer, claimNo, expert,
+damage (Kosten lt. Gutachten), reimbursement (Erstattung Versicherung),
+actualCost (tatsächlich angefallen), deductible (Selbstbeteiligung),
+createdAt
+```
+Alle Beträge `number|null`. Gutachten und Fotos hängen als `attachments` mit `ownerType: 'accident'` daran.
+
+### `meta` (Einzeldokument `meta/backup`)
+```
+lastBackupDate (YYYY-MM-DD)
+```
+Datum des letzten Exports, geräteübergreifend. **Nicht** Teil des JSON-Exports — es beschreibt das Backup, nicht die Daten.
 
 ---
 
@@ -378,10 +446,17 @@ Die App läuft danach im Vollbild ohne Browser-Chrome.
 ### Cloud-Backup (in der App)
 - **Export**: Dashboard → **📥 Export** → Datei `autowartung_backup_YYYY-MM-DD.json`
 - **Import**: Dashboard → **📤 Import** → JSON-Datei wählen → bestätigen
-- Import **ersetzt vollständig** alle Cloud-Daten (alle 8 Collections werden geleert und neu geschrieben)
-- Alte Backups (vor Tanken/Laden/Zubehör) sind kompatibel — fehlende Arrays werden als leer behandelt
+- Import **ersetzt vollständig** alle Cloud-Daten (alle 11 Collections werden geleert und neu geschrieben)
+- Alte Backups (vor Tanken/Laden/Zubehör/Belegen/Unfällen) sind kompatibel — fehlende Arrays werden als leer behandelt
 
-**Inhalt des Backups:** alle Felder aller Dokumente aus den 8 Collections. **Nicht** im Backup: `lastKwhPrice` aus `localStorage` (das ist nur ein lokaler UI-Default, kein Datum — pro Fahrzeug ist der Preis in `vehicles.kwhPrice` gespeichert und damit im Backup).
+**Inhalt des Backups:** alle Felder aller Dokumente aus den 11 Collections — **einschließlich aller Belege und Fotos**, da diese als Base64 in `attachments` liegen. Ein separates Foto-Backup ist dadurch nicht nötig. **Nicht** im Backup: `lastKwhPrice` aus `localStorage` (das ist nur ein lokaler UI-Default, kein Datum — pro Fahrzeug ist der Preis in `vehicles.kwhPrice` gespeichert und damit im Backup).
+
+### Backup-Erinnerung (seit v19, geräteübergreifend seit v21)
+Liegt der letzte Export mehr als **60 Tage** zurück, zeigt das Dashboard einen Hinweis mit den Knöpfen **📥 Jetzt exportieren** und **Später** („Später" gilt bis zum Schließen des Tabs).
+
+Das Datum steht im Firestore-Dokument `meta/backup` und wird per `onSnapshot` auf alle Geräte verteilt; zusätzlich liegt es im `localStorage`, damit die Anzeige offline funktioniert. Gelten tut immer das **neuere** der beiden Daten, die ältere Seite wird nachgezogen.
+
+> Bis v20 lag das Datum **nur** im `localStorage`. Folge: Ein Export am PC blieb dem Handy verborgen, das dann weiter mahnte.
 
 ### Lokale Code-Backups
 Snapshots der `index.html` werden manuell angelegt:
@@ -392,6 +467,9 @@ Copy-Item index.html "index_backup_$stamp.html"
 ```
 
 Für stabile Stände zusätzlich z. B. `index_backup_ready_v001.html`.
+
+### NAS-Sicherung
+Zusätzlich zu Git/GitHub wandert jeder Stand auf die Synology-NAS nach `W:\Backup\AI\Apps\Autowartung\JJJJMMTT` (täglicher NAS-Backup-Job). Inhalt je Ordner: `index_backup_*.html`, `SETUP.md` und der App-Daten-Export `autowartung_backup_JJJJ-MM-TT.json`.
 
 ---
 
@@ -406,9 +484,9 @@ const SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './ico
 
 **Strategie: „Netzwerk zuerst" (seit v14).** Bei bestehender Internetverbindung lädt die App immer die aktuelle Datei vom Server und aktualisiert damit den Cache; der Cache dient nur noch als **Offline-Reserve**. Vorteil: Updates kommen nach einem einfachen Neuladen automatisch an — kein manuelles „Service Worker abmelden" mehr nötig. (Vorher, bis v13: „Cache zuerst" — dort blieb der alte Stand hartnäckig erhalten.)
 
-**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v15`). Der Versionswechsel räumt beim Aktivieren alte Caches auf.
+**Regel:** Jede Code-Änderung an `index.html` → `vNN` in `sw.js` um eins erhöhen (aktuell `v23`). Der Versionswechsel räumt beim Aktivieren alte Caches auf.
 
-> **Versionsanzeige in der App:** Oben rechts in der Kopfzeile steht die aktuell geladene Version (z. B. `v15`). Sie wird **live aus dem SW-Cache** gelesen — einzige Pflegestelle bleibt `sw.js`. So sieht man auch sofort, ob ein Gerät schon die neue Version hat.
+> **Versionsanzeige in der App:** Oben rechts in der Kopfzeile steht die aktuell geladene Version (z. B. `v23`). Sie wird **live aus dem SW-Cache** gelesen — einzige Pflegestelle bleibt `sw.js`. So sieht man auch sofort, ob ein Gerät schon die neue Version hat.
 
 Nach einem Update genügt normalerweise ein einfaches Neuladen. Falls doch mal ein alter Stand klebt (z. B. weil der PC offline war): `Strg + F5` (Desktop) bzw. Tab neuladen (Mobile).
 
@@ -425,7 +503,7 @@ Nach einem Update genügt normalerweise ein einfaches Neuladen. Falls doch mal e
 | Firebase Projekt-ID | `autowartung-app` |
 | Firestore Region | `europe-west3` (Frankfurt) |
 | Default Heim-Preis €/kWh | `0,300` |
-| Aktuelle Cache-Version | `autowartung-v15` |
+| Aktuelle Cache-Version | `autowartung-v23` |
 
 ---
 
