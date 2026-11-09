@@ -789,7 +789,11 @@
     </div>
     <div class="form-group"><label>Gutachter / Kostenvoranschlag</label><input type="text" id="acExpert" placeholder="z.B. DEKRA München"></div>
     <div class="form-row">
-      <div class="form-group"><label>Schadenhöhe (€)</label><input type="number" step="0.01" id="acDamage" placeholder="z.B. 3200.00"></div>
+      <div class="form-group"><label>Kosten lt. Gutachten (€)</label><input type="number" step="0.01" id="acDamage" placeholder="z.B. 3200.00"></div>
+      <div class="form-group"><label>Erstattung Versicherung (€)</label><input type="number" step="0.01" id="acReimbursement" placeholder="z.B. 2900.00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Tatsächliche Kosten (€)</label><input type="number" step="0.01" id="acActual" placeholder="z.B. bei Eigenreparatur"></div>
       <div class="form-group"><label>Selbstbeteiligung (€)</label><input type="number" step="0.01" id="acDeductible" placeholder="z.B. 300.00"></div>
     </div>
     <div class="form-group">
@@ -2211,20 +2215,27 @@
       if (a.insurer)            l2.push('🏦 ' + escHtml(a.insurer));
       if (a.claimNo)            l2.push('🔖 ' + escHtml(a.claimNo));
       if (a.expert)             l2.push('📝 ' + escHtml(a.expert));
-      if (a.deductible != null) l2.push('SB ' + fmtEur(a.deductible));
       if (a.opponent)           l2.push('🚗 ' + escHtml(a.opponent).replace(/\n/g, ', '));
+      const money = [];
+      if (a.damage != null)        money.push('Gutachten ' + fmtEur(a.damage));
+      if (a.reimbursement != null) money.push('Erstattung ' + fmtEur(a.reimbursement));
+      if (a.actualCost != null)    money.push('tatsächlich ' + fmtEur(a.actualCost));
+      if (a.deductible != null)    money.push('SB ' + fmtEur(a.deductible));
+      // Oben rechts zaehlt, was wirklich angefallen ist; sonst der Gutachtenwert
+      const headline = a.actualCost != null ? a.actualCost : a.damage;
       const st = a.status || 'offen';
       return `<div class="acc-card">
         <div class="repair-card-top">
           <span class="repair-desc" style="white-space:pre-wrap">${escHtml(a.description)}</span>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-            ${a.damage!=null?`<span style="color:#c62828;font-weight:700;font-size:.9rem;white-space:nowrap">${fmtEur(a.damage)}</span>`:''}
+            ${headline!=null?`<span style="color:#c62828;font-weight:700;font-size:.9rem;white-space:nowrap">${fmtEur(headline)}</span>`:''}
             <button class="btn-icon" onclick="window.openAccidentEdit('${a.id}')">✏️</button>
             <button class="btn-icon" onclick="window.deleteAccident('${a.id}')">🗑️</button>
           </div>
         </div>
         <div class="repair-meta">${l1.join(' &nbsp;·&nbsp; ')}${attachmentBadge('accident', a.id)}</div>
         ${l2.length ? `<div class="repair-meta" style="margin-top:3px">${l2.join(' &nbsp;·&nbsp; ')}</div>` : ''}
+        ${money.length ? `<div class="repair-meta" style="margin-top:3px">💶 ${money.join(' &nbsp;·&nbsp; ')}</div>` : ''}
         <div style="margin-top:7px"><span class="acc-status ${st}">${STATUS_LABEL[st]}</span></div>
       </div>`;
     }).join('');
@@ -2244,8 +2255,10 @@
     document.getElementById('acInsurer').value    = a?.insurer     || '';
     document.getElementById('acClaimNo').value    = a?.claimNo     || '';
     document.getElementById('acExpert').value     = a?.expert      || '';
-    document.getElementById('acDamage').value     = a?.damage      ?? '';
-    document.getElementById('acDeductible').value = a?.deductible  ?? '';
+    document.getElementById('acDamage').value        = a?.damage        ?? '';
+    document.getElementById('acReimbursement').value = a?.reimbursement ?? '';
+    document.getElementById('acActual').value        = a?.actualCost    ?? '';
+    document.getElementById('acDeductible').value    = a?.deductible    ?? '';
     attachmentDraft = [];
     // deferred: neue Unfälle haben noch keine ID, Belege wandern beim Speichern mit
     attachmentCtx = { type: 'accident', id: id || null, containerId: 'acAttachments', deferred: true };
@@ -2269,8 +2282,10 @@
       insurer:    txt('acInsurer'),
       claimNo:    txt('acClaimNo'),
       expert:     txt('acExpert'),
-      damage:     num('acDamage'),
-      deductible: num('acDeductible'),
+      damage:        num('acDamage'),
+      reimbursement: num('acReimbursement'),
+      actualCost:    num('acActual'),
+      deductible:    num('acDeductible'),
     };
     let ownerId = editingAccidentId;
     if (editingAccidentId) { await updateDoc(doc(db, 'accidents', editingAccidentId), data); }
